@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Mona-Srii-Intain\\\\Desktop\\\\Intain_Admin_AI\\\\frontend\\\\src\" -Recurse -File | Where-Object { $_.Extension -in '.ts','.tsx','.css','.js','.jsx' } | Select-Object FullName, Length | Format-Table -AutoSize)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\Mona-Srii-Intain\\\\Desktop\\\\Intain_Admin_AI\\\\backend\\\\services\\\\waterfall_engine.py\" | Measure-Object -Line\\).Lines)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\Mona-Srii-Intain\\\\Desktop\\\\Intain_Admin_AI\\\\frontend\\\\src\\\\components\\\\extraction\\\\ExtractedFields.tsx\" | Measure-Object -Line\\).Lines)"
+    ]
+  }
+}

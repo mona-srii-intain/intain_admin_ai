@@ -1,0 +1,31 @@
+connections:
+  ia_demo:
+    user: IA_DEV_BI_USER
+    account: A5680544785571-TX50041
+    warehouse: IA_DEV_BI_WH
+    database: IA_DEMO
+    schema: PUBLIC
+    role: IA_DEV_BI_ROLE
+    authenticator: SNOWFLAKE_JWT
+    private_key_source: 'vault'
+    vault:
+      addr: 'https://vault3.intainabs.com'
+      role_id_env: 'ROLE_ID'
+      secret_id_env: 'SECRET_ID'
+      sign_path: '/v1/Snowflake/data/Credentials'
+      secret_field: 'file.p8'
+  ia_uat:
+      user: IDA_WRITE_USER
+      account: A5680544785571-TX50041
+      warehouse: IA_DEV_BI_WH
+      database: IA_UAT
+      schema: IDA_TEST
+      role: IDA_TEST_RW_ROLE
+      authenticator: SNOWFLAKE_JWT
+      private_key_source: 'vault'
+      vault:
+        addr: 'https://vault3.intainabs.com'
+        role_id_env: 'ROLE_ID'
+        secret_id_env: 'SECRET_ID'
+        sign_path: '/v1/Snowflake/data/Credentials'
+        secret_field: 'ida_write_user_key'
