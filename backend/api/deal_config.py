@@ -16,6 +16,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from models.deal import DealConfig, DealSummary, MakerCheckerReview
 from services.deal_store import (
@@ -25,6 +26,7 @@ from services.deal_store import (
     load_deal_config,
     save_deal_config,
 )
+from services.trigger_variables import TRIGGER_VARIABLES, KNOWN_ACTION_FLAGS
 
 router = APIRouter(prefix="/api/deals", tags=["Deal Configuration"])
 
@@ -126,6 +128,55 @@ async def get_deal_classes(deal_id: str):
         "classes": [cls.model_dump() for cls in config.classes],
         "total_classes": len(config.classes),
     }
+
+
+class TriggerExpressionRequest(BaseModel):
+    description: str = Field(..., description="Plain-English trigger description")
+    test_name: Optional[str] = Field(None, description="Optional trigger test name for additional context")
+
+
+class TriggerExpressionResponse(BaseModel):
+    condition: str
+    action: str
+    explanation: str
+
+
+@router.get("/triggers/variables", summary="Curated list of trigger evaluation variables")
+async def list_trigger_variables():
+    """Return the curated catalog of variables that may be referenced inside a
+    trigger condition expression. Useful for showing inline hints in the UI."""
+    return {
+        "variables": TRIGGER_VARIABLES,
+        "known_actions": KNOWN_ACTION_FLAGS,
+    }
+
+
+@router.post(
+    "/triggers/generate-expression",
+    summary="Translate a plain-English trigger description into a Python expression",
+    response_model=TriggerExpressionResponse,
+)
+async def generate_trigger_expression_endpoint(payload: TriggerExpressionRequest):
+    """
+    Call the LLM with a plain-English trigger description and the curated
+    variable catalog. Returns a Python boolean expression suitable for the
+    ``trigger_condition`` field, plus a candidate ``trigger_action`` flag name.
+
+    The variable catalog is server-side; clients only see the generated
+    expression — they don't need to know the engine's internals.
+    """
+    # Local import: keeps API module fast to import when the LLM stack is not
+    # yet ready (e.g. unit tests, startup).
+    from services.llm_agent import generate_trigger_expression
+
+    if not payload.description or not payload.description.strip():
+        raise HTTPException(status_code=400, detail="description is required")
+
+    result = await generate_trigger_expression(
+        description=payload.description,
+        test_name=payload.test_name or "",
+    )
+    return TriggerExpressionResponse(**result)
 
 
 @router.get("/{deal_id}/waterfall-rules", summary="Get waterfall rules for a deal")

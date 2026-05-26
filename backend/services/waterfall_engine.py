@@ -1705,6 +1705,38 @@ def _chip_status(margin_pct: float, fired: bool) -> str:
     return "green"
 
 
+def _evaluate_config_trigger(condition: str, context: Dict[str, Any]) -> bool:
+    """Evaluate a Python boolean expression from a deal config trigger condition.
+
+    context must supply the variables referenced in the expression. On any
+    failure (NameError from a stale/typo'd variable, SyntaxError from a
+    malformed expression, etc.) the function returns False so the waterfall
+    keeps running, but the specific failure is logged so the silent-no-fire is
+    debuggable from server logs.
+    """
+    try:
+        result = eval(condition, {"__builtins__": {}}, context)  # noqa: S307
+        return bool(result)
+    except NameError as e:
+        logger.warning(
+            f"Config trigger condition referenced unknown variable: {e} "
+            f"in expression {condition!r}. Trigger treated as not fired."
+        )
+        return False
+    except SyntaxError as e:
+        logger.warning(
+            f"Config trigger condition is not a valid Python expression "
+            f"({e.msg}): {condition!r}. Trigger treated as not fired."
+        )
+        return False
+    except Exception as e:
+        logger.warning(
+            f"Config trigger condition raised {type(e).__name__} ({e}) "
+            f"in expression {condition!r}. Trigger treated as not fired."
+        )
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Main waterfall computation
 # ---------------------------------------------------------------------------
@@ -2248,14 +2280,57 @@ def compute_waterfall(
     cl_margin = max(0.0, (cl_threshold - cl_value) / cl_threshold) if cl_threshold > 0 else 0.0
     dq_margin = max(0.0, (dq_threshold - dq_value) / dq_threshold) if dq_threshold > 0 else 0.0
 
-    # EventTest entries (existing report section)
+    # Shared eval context for config-based trigger conditions.
+    # Allows extracted Python expressions to reference these named variables.
+    trigger_eval_context: Dict[str, Any] = {
+        "subordinate_balance": cs_value,
+        "cumulative_loss_pct": cl_value,
+        "cumulative_losses": cum_realized,
+        "delinquency_60plus_pct": dq_value,
+        "pool_balance": pool_stats["total_beginning_balance"],
+    }
+
+    # Evaluate config triggers that have an extracted trigger_condition.
+    # The trigger_action name maps the result back to a known baseline flag or
+    # introduces a new named flag.
+    config_triggers_with_condition = [
+        t for t in (deal_config.triggers or []) if t.trigger_condition
+    ]
+
+    config_trigger_results: List[tuple] = []  # (trigger, fired)
+    for ct in config_triggers_with_condition:
+        fired = _evaluate_config_trigger(ct.trigger_condition, trigger_eval_context)
+        config_trigger_results.append((ct, fired))
+
+    # Build a dict from action-name → fired so config results can override the
+    # three hardcoded baseline evaluations when the action name matches.
+    _KNOWN_ACTIONS = {"CREDIT_SUPPORT_DEPLETION", "CUMULATIVE_LOSS_TRIGGER", "DELINQUENCY_TRIGGER"}
+    config_fired_by_action: Dict[str, bool] = {
+        ct.trigger_action: fired
+        for ct, fired in config_trigger_results
+        if ct.trigger_action
+    }
+
+    # Override baseline fired status with config-condition results when available.
+    cs_fired_final = config_fired_by_action.get("CREDIT_SUPPORT_DEPLETION", cs_fired)
+    cl_fired_final = config_fired_by_action.get("CUMULATIVE_LOSS_TRIGGER", cl_fired)
+    dq_fired_final = config_fired_by_action.get("DELINQUENCY_TRIGGER", dq_fired)
+
+    # Any config trigger whose action is not one of the three baseline names.
+    other_config_fired = any(
+        fired
+        for ct, fired in config_trigger_results
+        if ct.trigger_action not in _KNOWN_ACTIONS
+    )
+
+    # EventTest entries — use final (possibly overridden) fired status.
     events.extend([
         EventTest(
             test_name="Credit Support Depletion Event",
             current_value=cs_value,
             operator="equals",
             threshold=0.0,
-            status="Fail" if cs_fired else "Pass",
+            status="Fail" if cs_fired_final else "Pass",
             description="Aggregate subordinate principal (M-1..B-4) > 0",
         ),
         EventTest(
@@ -2263,7 +2338,7 @@ def compute_waterfall(
             current_value=cl_value,
             operator="greater_than",
             threshold=cl_threshold,
-            status="Fail" if cl_fired else "Pass",
+            status="Fail" if cl_fired_final else "Pass",
             description="Cumulative realized losses / cert principal (excl A-1) ≤ 5%",
         ),
         EventTest(
@@ -2271,16 +2346,33 @@ def compute_waterfall(
             current_value=dq_value,
             operator="greater_than",
             threshold=dq_threshold,
-            status="Fail" if dq_fired else "Pass",
+            status="Fail" if dq_fired_final else "Pass",
             description="6-mo rolling avg of 60+ DPD / (pool − A-1) ≤ 5%",
         ),
     ])
 
-    # Dashboard chips (3 fixed triggers)
+    # EventTest rows for non-baseline config triggers.
+    _baseline_event_names = {
+        "Credit Support Depletion Event",
+        "Cumulative Loss Trigger",
+        "Delinquency Trigger",
+    }
+    for ct, ct_fired in config_trigger_results:
+        if ct.test_name not in _baseline_event_names:
+            events.append(EventTest(
+                test_name=ct.test_name,
+                current_value=0.0,
+                operator=ct.operator,
+                threshold=ct.threshold or 0.0,
+                status="Fail" if ct_fired else "Pass",
+                description=ct.description or f"if {ct.trigger_condition}: {ct.trigger_action} = True",
+            ))
+
+    # Dashboard chips — baseline 3 use final fired status.
     trigger_chips = [
         TriggerChip(
             name="Credit Support Depletion",
-            status=_chip_status(cs_margin, cs_fired),
+            status=_chip_status(cs_margin, cs_fired_final),
             current_value=cs_value,
             threshold=0.0,
             margin_pct=cs_margin,
@@ -2288,7 +2380,7 @@ def compute_waterfall(
         ),
         TriggerChip(
             name="Cumulative Loss",
-            status=_chip_status(cl_margin, cl_fired),
+            status=_chip_status(cl_margin, cl_fired_final),
             current_value=cl_value,
             threshold=cl_threshold,
             margin_pct=cl_margin,
@@ -2296,7 +2388,7 @@ def compute_waterfall(
         ),
         TriggerChip(
             name="Delinquency",
-            status=_chip_status(dq_margin, dq_fired),
+            status=_chip_status(dq_margin, dq_fired_final),
             current_value=dq_value,
             threshold=dq_threshold,
             margin_pct=dq_margin,
@@ -2304,8 +2396,22 @@ def compute_waterfall(
         ),
     ]
 
+    # Extra chips for non-baseline config triggers.
+    _baseline_chip_names = {"Credit Support Depletion", "Cumulative Loss", "Delinquency"}
+    for ct, ct_fired in config_trigger_results:
+        display_name = ct.test_name.replace(" Event", "").replace(" Trigger", "")
+        if display_name not in _baseline_chip_names:
+            trigger_chips.append(TriggerChip(
+                name=display_name,
+                status="red" if ct_fired else "green",
+                current_value=0.0,
+                threshold=ct.threshold or 0.0,
+                margin_pct=0.0,
+                description=ct.description or f"if {ct.trigger_condition}: {ct.trigger_action} = True",
+            ))
+
     # Active principal-waterfall branch: any trigger firing flips to sequential.
-    any_trigger_fired = cs_fired or cl_fired or dq_fired
+    any_trigger_fired = cs_fired_final or cl_fired_final or dq_fired_final or other_config_fired
     active_trigger_branch = "Trigger In Effect" if any_trigger_fired else "Trigger Not In Effect"
 
     # Canonical branch traces (both rendered for disclosure)

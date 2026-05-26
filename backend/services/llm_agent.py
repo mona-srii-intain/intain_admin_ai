@@ -1475,12 +1475,25 @@ Return JSON:
   "loss_allocation_order": ["B-5", "B-4", "B-3", "B-2", "B-1", "M-2", "M-1"],
   "triggers": [
     {
-      "test_name": "Credit Enhancement Test",
+      "test_name": "Credit Support Depletion Event",
       "test_type": "ce",
-      "description": "CE must be >= threshold",
-      "threshold": 0.05,
-      "operator": "greater_than",
-      "trigger_on_failure": "Sequential principal distribution to seniors"
+      "description": "Trigger fires when aggregate subordinate balance reaches zero",
+      "trigger_condition": "subordinate_balance == 0",
+      "trigger_action": "CREDIT_SUPPORT_DEPLETION"
+    },
+    {
+      "test_name": "Cumulative Loss Trigger",
+      "test_type": "oc",
+      "description": "Cumulative realized losses exceed 5% of original certificate balance",
+      "trigger_condition": "cumulative_loss_pct > 0.05",
+      "trigger_action": "CUMULATIVE_LOSS_TRIGGER"
+    },
+    {
+      "test_name": "Delinquency Trigger",
+      "test_type": "delinquency",
+      "description": "6-month rolling 60+ DPD rate exceeds 5%",
+      "trigger_condition": "delinquency_60plus_pct > 0.05",
+      "trigger_action": "DELINQUENCY_TRIGGER"
     }
   ],
   "reserve_accounts": [
@@ -1496,7 +1509,19 @@ Return JSON:
 
 LOSS ALLOCATION: Most subordinate class absorbs losses first (usually B-5 or lowest rated).
 TEST TYPES: "oc" (overcollateralization), "ce" (credit enhancement), "delinquency", "cleanup_call", "other"
-THRESHOLD: Express as decimal (5% = 0.05).
+
+TRIGGER CONDITION — write as a Python boolean expression using ONLY these variables:
+  subordinate_balance  : aggregate M-1..B-4 beginning balance (dollars)
+  cumulative_loss_pct  : cumulative realized losses / original cert balance (decimal, e.g. 0.05)
+  cumulative_losses    : cumulative realized losses in dollars
+  delinquency_60plus_pct : 6-month rolling avg 60+ DPD / pool balance (decimal)
+  pool_balance         : current pool beginning balance (dollars)
+
+TRIGGER ACTION — use one of these known flag names (exact uppercase):
+  CREDIT_SUPPORT_DEPLETION  : for credit support / subordinate depletion triggers
+  CUMULATIVE_LOSS_TRIGGER   : for cumulative loss / OC tests
+  DELINQUENCY_TRIGGER       : for delinquency / 60+ DPD tests
+  For any other trigger type, invent a SHORT_UPPERCASE_NAME.
 
 Document text:
 {text}
@@ -2167,9 +2192,10 @@ async def extract_deal_config_from_pdf(
                 test_name=t.get("test_name", ""),
                 test_type=t.get("test_type", "other"),
                 description=t.get("description", ""),
-                threshold=float(t.get("threshold") or 0.0),
+                threshold=float(t.get("threshold") or 0.0) if t.get("threshold") is not None else None,
                 operator=t.get("operator", "greater_than"),
-                trigger_on_failure=t.get("trigger_on_failure"),
+                trigger_condition=t.get("trigger_condition") or None,
+                trigger_action=t.get("trigger_action") or None,
             ))
         except Exception:
             pass
@@ -2262,3 +2288,175 @@ async def extract_deal_config_from_pdf(
         f"confidence={deal_config.extraction_confidence}"
     )
     return deal_config
+
+
+# ---------------------------------------------------------------------------
+# Natural-language trigger condition → Python expression
+#
+# Used by the trigger edit UI when a user does not know the engine's variable
+# names. We give the LLM a curated catalog (see ``services.trigger_variables``)
+# and ask it to emit a Python boolean expression that uses ONLY those names.
+# Action flag name is generated alongside so the trigger plugs straight into
+# ``_evaluate_config_trigger`` without further mapping.
+# ---------------------------------------------------------------------------
+
+
+TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT = """You translate plain-English ABS/MBS \
+trigger descriptions into Python boolean expressions that the waterfall engine \
+can evaluate.
+
+You MUST output a JSON object with these keys:
+  "condition":   string — a single Python boolean expression. References ONLY \
+the variable names from the catalog below. No imports, no calls, no lambdas.
+  "action":      string — SCREAMING_SNAKE_CASE flag name set to True when the \
+condition fires. Reuse one of the known action names if it fits.
+  "explanation": string — one short sentence describing what the expression \
+checks, for the user to sanity-check.
+
+HARD RULES
+1. Use ONLY the variable names listed in the catalog. Inventing names \
+(e.g., ``oc_ratio``, ``trigger_value``) is forbidden — those will fail at \
+evaluation time.
+2. Percentages in the catalog are decimal fractions: 5% → 0.05, 12.5% → 0.125.
+3. Dollar amounts are absolute (no scaling).
+4. The expression must be self-contained — no statements, no semicolons.
+5. If the description is ambiguous, pick the most defensible mapping and call \
+out the assumption inside ``explanation``.
+6. If no listed variable matches the description, return condition="" and \
+explanation describing which variable would be needed."""
+
+
+def _build_trigger_nl_to_expr_user_prompt(description: str, test_name: str = "") -> str:
+    """Compose the LLM user message with the curated variable catalog."""
+    # Local import to avoid creating a circular dep at module-load time
+    from services.trigger_variables import (
+        action_catalog_for_prompt,
+        variable_catalog_for_prompt,
+    )
+
+    test_name_block = (
+        f"TEST NAME (for context):\n{test_name.strip()}\n\n"
+        if test_name.strip() else ""
+    )
+    return (
+        f"{test_name_block}"
+        f"PLAIN-ENGLISH DESCRIPTION:\n{description.strip()}\n\n"
+        f"AVAILABLE VARIABLES (use ONLY these names — no others):\n"
+        f"{variable_catalog_for_prompt()}\n\n"
+        f"KNOWN ACTION FLAG NAMES (reuse if applicable, else coin a new "
+        f"SCREAMING_SNAKE_CASE name):\n"
+        f"{action_catalog_for_prompt()}\n\n"
+        f"Return JSON with keys: condition, action, explanation."
+    )
+
+
+async def generate_trigger_expression(
+    description: str,
+    test_name: str = "",
+) -> Dict[str, str]:
+    """
+    Translate a plain-English trigger description into a Python boolean
+    expression that uses only the curated waterfall trigger variables.
+
+    Returns ``{"condition": str, "action": str, "explanation": str}``. On
+    failure, returns empty strings so the caller can fall back to manual entry.
+    """
+    if not description or not description.strip():
+        return {"condition": "", "action": "", "explanation": ""}
+
+    llm = _get_llm(temperature=0.0)
+    user_prompt = _build_trigger_nl_to_expr_user_prompt(description, test_name)
+
+    raw = await _call_llm(
+        llm=llm,
+        system_prompt=TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT,
+        user_content=user_prompt,
+        expect_list=False,
+    )
+
+    if not isinstance(raw, dict):
+        return {"condition": "", "action": "", "explanation": ""}
+
+    condition = str(raw.get("condition") or "").strip()
+    action = str(raw.get("action") or "").strip()
+    explanation = str(raw.get("explanation") or "").strip()
+
+    # Hard validation: refuse to return a broken expression. We do three checks
+    # against exactly the constraints _evaluate_config_trigger enforces at
+    # waterfall-compute time, so anything that would silently fail there fails
+    # loudly here instead.
+    if condition:
+        diag = _validate_trigger_expression(condition)
+        if diag:
+            logger.warning(
+                f"Trigger NL→expr rejected: {diag}. Raw expression={condition!r}"
+            )
+            # Drop the condition — the frontend will see an empty field plus a
+            # diagnostic explanation, so the user can rephrase or fill in
+            # manually rather than save a no-op trigger.
+            explanation = (
+                f"⚠ Could not produce a valid expression: {diag} "
+                f"The model proposed `{condition}`. Try rephrasing or enter "
+                f"the expression manually."
+            )
+            condition = ""
+
+    return {"condition": condition, "action": action, "explanation": explanation}
+
+
+def _validate_trigger_expression(expression: str) -> Optional[str]:
+    """
+    Validate that ``expression`` will evaluate cleanly inside
+    ``_evaluate_config_trigger``.
+
+    Three checks, mirroring what the engine does:
+      1. The string must parse as a Python expression (catches SyntaxError).
+      2. Every bare identifier must be either an allowed variable, a safe
+         builtin (min/max/abs), or a Python keyword/literal.
+      3. The expression must execute against a dummy context with all known
+         variables set, with the same restricted ``{"__builtins__": {}}``
+         globals the engine uses (catches NameError, AttributeError, etc.).
+
+    Returns None when the expression is safe; otherwise returns a short
+    human-readable diagnostic.
+    """
+    from services.trigger_variables import ALLOWED_VARIABLE_NAMES
+
+    # Check 1: parseable as a Python expression
+    try:
+        compile(expression, "<trigger>", "eval")
+    except SyntaxError as e:
+        return f"syntax error ({e.msg})"
+
+    # Check 2: identifier whitelist. The identifier regex requires a leading
+    # letter/underscore, so numeric literals (0.05, 1_000_000) are skipped
+    # naturally. Strings inside the expression are not expected for triggers
+    # and would only widen the false-positive surface, so we don't strip them.
+    idents = set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", expression))
+    _SAFE_NAMES = {
+        "and", "or", "not", "True", "False", "None", "in", "is",
+        "min", "max", "abs",
+    }
+    unknown = idents - ALLOWED_VARIABLE_NAMES - _SAFE_NAMES
+    if unknown:
+        return (
+            f"references unknown name(s): {', '.join(sorted(unknown))}. "
+            f"Allowed variables: {', '.join(sorted(ALLOWED_VARIABLE_NAMES))}"
+        )
+
+    # Check 3: actually evaluate against a dummy context. Catches the long
+    # tail (e.g. calls on non-callable objects, attribute access, division by
+    # something we didn't anticipate).
+    dummy_ctx = {name: 1.0 for name in ALLOWED_VARIABLE_NAMES}
+    safe_globals = {
+        "__builtins__": {},
+        "min": min, "max": max, "abs": abs,
+    }
+    try:
+        eval(expression, safe_globals, dummy_ctx)  # noqa: S307
+    except NameError as e:
+        return f"references undefined name: {e}"
+    except Exception as e:
+        return f"would raise {type(e).__name__} at evaluation time: {e}"
+
+    return None

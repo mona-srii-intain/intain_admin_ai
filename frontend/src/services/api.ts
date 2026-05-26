@@ -50,6 +50,21 @@ export const listDeals = () =>
 export const getDeal = (dealId: string) =>
   api.get(`/api/deals/${dealId}`).then((r) => r.data);
 
+// ─── Trigger NL → Expression ─────────────────────────────────────────────────
+export interface TriggerExpression {
+  condition: string;
+  action: string;
+  explanation: string;
+}
+
+export const generateTriggerExpression = (payload: {
+  description: string;
+  test_name?: string;
+}) =>
+  api
+    .post("/api/deals/triggers/generate-expression", payload, { timeout: 60_000 })
+    .then((r) => r.data as TriggerExpression);
+
 // ─── Loantape ────────────────────────────────────────────────────────────────
 export const listLoanDeals = () =>
   api.get("/api/loantape/deals").then((r) => r.data);

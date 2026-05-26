@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Edit3, Save, CheckCircle2, X, ChevronDown, ChevronUp,
   ShieldCheck, Plus, Trash2, ArrowUp, ArrowDown, Mail, Loader2,
-  PanelRightOpen,
+  PanelRightOpen, Sparkles, RefreshCw,
 } from "lucide-react";
 import type {
   DealConfig, CertificateClass, FeeConfig, WaterfallStep,
   ServicerConfig, TriggerTest, ReserveAccount,
 } from "../../types";
-import { submitReview, getAuditAnnotations, addAuditEntry, dealPdfUrl } from "../../services/api";
+import { submitReview, getAuditAnnotations, addAuditEntry, dealPdfUrl, generateTriggerExpression } from "../../services/api";
 import toast from "react-hot-toast";
 import PDFVerificationPanel from "./PDFVerificationPanel";
 import { editSectionToUi, valuesForSection } from "./pdfSectionValues";
@@ -392,6 +392,145 @@ function WaterfallTable({ label, wfPrefix, steps, editing, onUpdate, onDelete, o
 // Need React for Fragment
 import React from "react";
 
+// ─── Trigger logic editor (NL → Python expression) ──────────────────────────
+//
+// Users don't know the engine's variable names (e.g. `delinquency_60plus_pct`),
+// so we let them describe the trigger in plain English. The LLM is given the
+// curated variable catalog server-side and returns a valid Python expression.
+// The manual Condition / Action boxes are still the source of truth — the NL
+// path simply pre-fills them so the user can review/edit before saving.
+
+interface TriggerLogicEditorProps {
+  trigger: TriggerTest;
+  onUpdate: (patch: Partial<TriggerTest>) => void;
+}
+
+function TriggerLogicEditor({ trigger, onUpdate }: TriggerLogicEditorProps) {
+  const [nlOpen, setNlOpen] = useState(false);
+  const [nlText, setNlText] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [explanation, setExplanation] = useState<string>("");
+  const [hasGenerated, setHasGenerated] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!nlText.trim()) {
+      toast.error("Enter a description first");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const result = await generateTriggerExpression({
+        description: nlText,
+        test_name: trigger.test_name,
+      });
+      if (!result.condition) {
+        toast.error("Could not generate an expression — try rephrasing.");
+        if (result.explanation) setExplanation(result.explanation);
+        return;
+      }
+      onUpdate({
+        trigger_condition: result.condition,
+        trigger_action: result.action || trigger.trigger_action,
+      });
+      setExplanation(result.explanation);
+      setHasGenerated(true);
+      toast.success("Expression generated. Review before saving.");
+    } catch {
+      toast.error("Generation failed. Please try again or enter manually.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 min-w-[280px]">
+      {/* NL → expression toggle */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setNlOpen((v) => !v)}
+          className={`flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded transition-colors ${
+            nlOpen
+              ? "bg-purple-100 text-purple-700"
+              : "text-purple-600 hover:bg-purple-50"
+          }`}
+          title="Describe the trigger in plain English; the LLM will generate a valid expression"
+        >
+          <Sparkles size={11} />
+          {nlOpen ? "Hide plain-English input" : "Describe in plain English"}
+        </button>
+        {nlOpen && hasGenerated && (
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={generating || !nlText.trim()}
+            className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700 disabled:opacity-40"
+            title="Regenerate the expression"
+          >
+            <RefreshCw size={10} className={generating ? "animate-spin" : ""} />
+            Regenerate
+          </button>
+        )}
+      </div>
+
+      {nlOpen && (
+        <div className="border border-purple-200 bg-purple-50/40 rounded-md p-2 space-y-2">
+          <textarea
+            rows={3}
+            placeholder='e.g. "fires when the 6-month rolling 60+ day delinquency rate exceeds 5%"'
+            value={nlText}
+            onChange={(e) => setNlText(e.target.value)}
+            className="w-full px-2 py-1.5 text-xs border border-purple-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-purple-300 resize-y"
+          />
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] text-purple-600 leading-tight">
+              The generated expression below uses only variables known to the
+              waterfall engine.
+            </p>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating || !nlText.trim()}
+              className="text-[11px] text-white bg-purple-600 hover:bg-purple-700 px-2.5 py-1 rounded disabled:opacity-40 flex items-center gap-1 flex-shrink-0"
+            >
+              {generating ? (
+                <><Loader2 size={10} className="animate-spin" /> Generating…</>
+              ) : (
+                <><Sparkles size={10} /> Generate</>
+              )}
+            </button>
+          </div>
+          {explanation && (
+            <p className="text-[10px] text-gray-600 bg-white border border-purple-100 rounded px-2 py-1 leading-snug">
+              {explanation}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Manual condition + action — always visible, source of truth on save */}
+      <div>
+        <p className="text-xs text-gray-400 font-medium">Condition</p>
+        <TA
+          value={trigger.trigger_condition ?? ""}
+          onChange={(v) => onUpdate({ trigger_condition: v || undefined })}
+          rows={2}
+          className="w-full font-mono text-xs"
+        />
+      </div>
+      <div>
+        <p className="text-xs text-gray-400 font-medium">Action</p>
+        <input
+          className="input text-sm py-1 px-2 w-full font-mono text-xs"
+          placeholder="e.g. CREDIT_SUPPORT_DEPLETION"
+          value={trigger.trigger_action ?? ""}
+          onChange={(e) => onUpdate({ trigger_action: e.target.value || undefined })}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── Default factories ────────────────────────────────────────────────────────
 
 const newClass = (): CertificateClass => ({
@@ -405,7 +544,7 @@ const newFee = (): FeeConfig => ({ fee_name: "", fee_type: "percentage", fee_rat
 const newExpense = (): FeeConfig => ({ fee_name: "", fee_type: "fixed", fee_rate: undefined, fixed_amount: undefined, priority: 1, applies_to: "pool_balance", servicer_name: "", category: "expense", paid_from: "interest_remittance", payee: "", accrues: false, shortfall_carried: true });
 const newReserveAcct = (): ReserveAccount => ({ account_name: "", account_type: "reserve", initial_balance: 0, target_amount: undefined, target_formula: "", funded_from: "excess_cashflow", released_to: "available_funds", release_condition: "", release_formula: "", floor: 0, draws_allowed: true, draw_priority: 99 });
 const newServicer = (): ServicerConfig => ({ servicer_name: "", servicing_fee_rate: 0.0025, advance_obligation: false, portfolio_pct: undefined });
-const newTrigger = (): TriggerTest => ({ test_name: "", test_type: "oc", description: "", threshold: 0, trigger_action: "" });
+const newTrigger = (): TriggerTest => ({ test_name: "", test_type: "oc", description: "", trigger_condition: "", trigger_action: "" });
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -1045,8 +1184,8 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
                   <thead>
                     <tr className="table-header">
                       <th className={thCls}>Test Name</th><th className={thCls}>Type</th>
-                      <th className={thCls}>Description</th><th className={thCls}>Threshold</th>
-                      <th className={thCls}>Trigger Action</th><th className="w-7"></th>
+                      <th className={thCls}>Description</th>
+                      <th className={thCls}>Trigger Logic</th><th className="w-7"></th>
                       {editing("triggers") && <th className={thCls}></th>}
                     </tr>
                   </thead>
@@ -1059,8 +1198,16 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
                             <td className={tdCls}>{editing("triggers") ? <TxtInput value={t.test_name} onChange={(v) => updTrigger(i, { test_name: v })} className="w-40" /> : <span className="font-medium">{t.test_name || "—"}</span>}</td>
                             <td className={tdCls}>{editing("triggers") ? <SelectInput value={t.test_type} onChange={(v) => updTrigger(i, { test_type: v })} options={["oc", "ce", "cleanup_call", "delinquency", "other"]} className="w-28" /> : <span className="uppercase text-xs badge bg-gray-100 text-gray-700">{t.test_type}</span>}</td>
                             <td className={tdCls}>{editing("triggers") ? <TA value={t.description} onChange={(v) => updTrigger(i, { description: v })} rows={2} className="w-full min-w-[180px]" /> : <span className="text-gray-700 text-xs">{t.description || "—"}</span>}</td>
-                            <td className={tdCls}>{editing("triggers") ? <NumInput value={t.threshold as number} onChange={(v) => updTrigger(i, { threshold: +v })} step="0.01" className="w-24" /> : String(t.threshold ?? "—")}</td>
-                            <td className={tdCls}>{editing("triggers") ? <TxtInput value={t.trigger_action ?? ""} onChange={(v) => updTrigger(i, { trigger_action: v || undefined })} className="w-40" /> : t.trigger_action || "—"}</td>
+                            <td className={tdCls}>
+                              {editing("triggers") ? (
+                                <TriggerLogicEditor
+                                  trigger={t}
+                                  onUpdate={(patch) => updTrigger(i, patch)}
+                                />
+                              ) : (t.trigger_condition || t.trigger_action) ? (
+                                <code className="block text-xs bg-gray-100 px-2 py-1.5 rounded font-mono text-gray-800 whitespace-pre min-w-[200px]">{`if ${t.trigger_condition || "…"}:\n    ${t.trigger_action || "…"} = True`}</code>
+                              ) : <span className="text-gray-400">—</span>}
+                            </td>
                             <td className="px-1 py-2 w-7"><AnnotIcon rowKey={rk} annotations={annotations} annotPanel={annotPanel} setAnnotPanel={setAnnotPanel} /></td>
                             {editing("triggers") && <td className={tdCls}><DelBtn onClick={() => delTrigger(i)} /></td>}
                           </tr>
