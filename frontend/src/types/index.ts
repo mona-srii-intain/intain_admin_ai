@@ -126,7 +126,7 @@ export interface TriggerTest {
   test_name: string;
   test_type: string;
   description: string;
-  threshold: string | number;
+  trigger_condition?: string;
   trigger_action?: string;
 }
 

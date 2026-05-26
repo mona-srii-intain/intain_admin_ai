@@ -409,13 +409,17 @@ export default function DealConfigReviewPage() {
                   {triggers.map((t, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                       <AlertCircle size={15} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-gray-700">{t.test_name}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{t.description}</p>
                         <div className="flex gap-2 mt-1">
                           <span className="badge bg-gray-100 text-gray-600 text-[10px]">{t.test_type}</span>
-                          <span className="badge badge-yellow text-[10px]">threshold: {t.threshold}</span>
                         </div>
+                        {(t.trigger_condition || t.trigger_action) && (
+                          <code className="block mt-2 text-xs bg-gray-100 px-2 py-1.5 rounded font-mono text-gray-800 whitespace-pre">
+                            {`if ${t.trigger_condition || "…"}:\n    ${t.trigger_action || "…"} = True`}
+                          </code>
+                        )}
                       </div>
                     </div>
                   ))}

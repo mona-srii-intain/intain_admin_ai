@@ -96,11 +96,27 @@ class TriggerTest(BaseModel):
     test_name: str = Field(..., description="Name of the test")
     test_type: str = Field(..., description="oc, ce, cleanup_call, other")
     description: str = Field("")
-    threshold: float = Field(..., description="Threshold value")
+    threshold: Optional[float] = Field(None, description="Threshold value (legacy; prefer trigger_condition)")
     operator: str = Field("greater_than", description="greater_than, less_than, equal")
-    numerator_components: List[str] = Field(default_factory=list, description="Balance components for numerator")
-    denominator_components: List[str] = Field(default_factory=list, description="Balance components for denominator")
-    trigger_on_failure: Optional[str] = Field(None, description="What changes when test fails")
+    numerator_components: List[str] = Field(default_factory=list)
+    denominator_components: List[str] = Field(default_factory=list)
+    trigger_condition: Optional[str] = Field(
+        None,
+        description=(
+            "Python boolean expression (condition of the if-statement). "
+            "Available variables: subordinate_balance, cumulative_loss_pct, cumulative_losses, "
+            "delinquency_60plus_pct, pool_balance. "
+            "Example: subordinate_balance == 0"
+        ),
+    )
+    trigger_action: Optional[str] = Field(
+        None,
+        description=(
+            "Action flag name set to True when condition fires. "
+            "Known names: CREDIT_SUPPORT_DEPLETION, CUMULATIVE_LOSS_TRIGGER, DELINQUENCY_TRIGGER. "
+            "Example: CREDIT_SUPPORT_DEPLETION"
+        ),
+    )
 
 
 class ReserveAccount(BaseModel):

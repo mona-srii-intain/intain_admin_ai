@@ -35,28 +35,28 @@
       "total_cap_carryover": 0.0,
       "cap_carryover_paid": 0.0,
       "ending_cap_carryover": 0.0,
-      "principal_paid": 4494505.619738887,
+      "principal_paid": 4615937.549599999,
       "writedown_amount": 0.0,
       "writeup_amount": 0.0,
       "cumulative_writedown": 0.0,
       "realized_loss": 0.0,
       "cumulative_realized_loss": 0.0,
-      "ending_principal": 121691494.38026111,
+      "ending_principal": 121570062.4504,
       "cumulative_interest_paid": 766054.175,
-      "cumulative_principal_paid": 4494505.619738887,
-      "cumulative_total_distribution": 5260559.794738887,
+      "cumulative_principal_paid": 4615937.549599999,
+      "cumulative_total_distribution": 5381991.724599998,
       "cumulative_deferred_interest": 0.0,
-      "total_paid": 5260559.794738887,
+      "total_paid": 5381991.724599998,
       "factor_beginning": 1000.0,
       "factor_interest": 6.070833333333334,
-      "factor_principal": 35.61810042111555,
-      "factor_total": 41.68893375444888,
-      "factor_ending": 964.3818995788844,
+      "factor_principal": 36.58042532135101,
+      "factor_total": 42.65125865468434,
+      "factor_ending": 963.4195746786489,
       "record_date": "2023-08-19"
     },
     {
       "class_name": "M-1",
-      "cusip": "46656UAC7",
+      "cusip": "46656UAD5",
       "class_type": "Mezzanine",
       "original_principal": 14073000.0,
       "beginning_principal": 14073000.0,
@@ -96,7 +96,7 @@
     },
     {
       "class_name": "M-2",
-      "cusip": "46656UAD5",
+      "cusip": "46656UAE3",
       "class_type": "Mezzanine",
       "original_principal": 12115000.0,
       "beginning_principal": 12115000.0,
@@ -136,7 +136,7 @@
     },
     {
       "class_name": "B-1",
-      "cusip": "46656UAE3",
+      "cusip": "46656UAF0",
       "class_type": "Subordinate",
       "original_principal": 6057000.0,
       "beginning_principal": 6057000.0,
@@ -176,7 +176,7 @@
     },
     {
       "class_name": "B-2",
-      "cusip": "46656UAF0",
+      "cusip": "46656UAG8",
       "class_type": "Subordinate",
       "original_principal": 3449000.0,
       "beginning_principal": 3449000.0,
@@ -216,7 +216,7 @@
     },
     {
       "class_name": "B-3",
-      "cusip": "46656UAG8",
+      "cusip": "46656UAH6",
       "class_type": "Subordinate",
       "original_principal": 4473000.0,
       "beginning_principal": 4473000.0,
@@ -251,86 +251,6 @@
       "factor_interest": 0.0,
       "factor_principal": 0.0,
       "factor_total": 0.0,
-      "factor_ending": 1000.0,
-      "record_date": "2023-08-19"
-    },
-    {
-      "class_name": "B-4",
-      "cusip": "46656UAH6",
-      "class_type": "Subordinate",
-      "original_principal": 7456076.0,
-      "beginning_principal": 7456076.0,
-      "interest_rate": 0.10175751022770521,
-      "benchmark_rate": 0.053,
-      "accrual_start": "2023-07-20",
-      "accrual_end": "2023-08-19",
-      "days_accrued": 31,
-      "beginning_interest_carryforward": 0.0,
-      "interest_accrued": 65333.510068569354,
-      "total_interest_due": 65333.510068569354,
-      "interest_paid": 0.0,
-      "ending_interest_carryforward": 65333.510068569354,
-      "beginning_cap_carryover": 0.0,
-      "current_cap_carryover": 0.0,
-      "total_cap_carryover": 0.0,
-      "cap_carryover_paid": 0.0,
-      "ending_cap_carryover": 0.0,
-      "principal_paid": 0.0,
-      "writedown_amount": 0.0,
-      "writeup_amount": 0.0,
-      "cumulative_writedown": 0.0,
-      "realized_loss": 0.0,
-      "cumulative_realized_loss": 0.0,
-      "ending_principal": 7456076.0,
-      "cumulative_interest_paid": 0.0,
-      "cumulative_principal_paid": 0.0,
-      "cumulative_total_distribution": 0.0,
-      "cumulative_deferred_interest": 65333.510068569354,
-      "total_paid": 0.0,
-      "factor_beginning": 1000.0,
-      "factor_interest": 0.0,
-      "factor_principal": 0.0,
-      "factor_total": 0.0,
-      "factor_ending": 1000.0,
-      "record_date": "2023-08-19"
-    },
-    {
-      "class_name": "A-IO-S",
-      "cusip": "46656UAJ2",
-      "class_type": "Senior",
-      "original_principal": 112814180.0,
-      "beginning_principal": 112814180.0,
-      "interest_rate": 0.0125,
-      "benchmark_rate": 0.0,
-      "accrual_start": "2023-07-20",
-      "accrual_end": "2023-08-19",
-      "days_accrued": 31,
-      "beginning_interest_carryforward": 0.0,
-      "interest_accrued": 121431.92986111112,
-      "total_interest_due": 121431.92986111112,
-      "interest_paid": 121431.92986111112,
-      "ending_interest_carryforward": 0.0,
-      "beginning_cap_carryover": 0.0,
-      "current_cap_carryover": 0.0,
-      "total_cap_carryover": 0.0,
-      "cap_carryover_paid": 0.0,
-      "ending_cap_carryover": 0.0,
-      "principal_paid": 0.0,
-      "writedown_amount": 0.0,
-      "writeup_amount": 0.0,
-      "cumulative_writedown": 0.0,
-      "realized_loss": 0.0,
-      "cumulative_realized_loss": 0.0,
-      "ending_principal": 112814180.0,
-      "cumulative_interest_paid": 121431.92986111112,
-      "cumulative_principal_paid": 0.0,
-      "cumulative_total_distribution": 121431.92986111112,
-      "cumulative_deferred_interest": 0.0,
-      "total_paid": 121431.92986111112,
-      "factor_beginning": 1000.0,
-      "factor_interest": 1.0763888888888888,
-      "factor_principal": 0.0,
-      "factor_total": 1.0763888888888888,
       "factor_ending": 1000.0,
       "record_date": "2023-08-19"
     },
@@ -375,6 +295,46 @@
       "record_date": "2023-08-19"
     },
     {
+      "class_name": "B-4",
+      "cusip": "46656UAH6",
+      "class_type": "Subordinate",
+      "original_principal": 7456076.0,
+      "beginning_principal": 7456076.0,
+      "interest_rate": 0.053,
+      "benchmark_rate": 0.053,
+      "accrual_start": "2023-07-20",
+      "accrual_end": "2023-08-19",
+      "days_accrued": 31,
+      "beginning_interest_carryforward": 0.0,
+      "interest_accrued": 34028.70241111111,
+      "total_interest_due": 34028.70241111111,
+      "interest_paid": 0.0,
+      "ending_interest_carryforward": 34028.70241111111,
+      "beginning_cap_carryover": 0.0,
+      "current_cap_carryover": 0.0,
+      "total_cap_carryover": 0.0,
+      "cap_carryover_paid": 0.0,
+      "ending_cap_carryover": 0.0,
+      "principal_paid": 0.0,
+      "writedown_amount": 0.0,
+      "writeup_amount": 0.0,
+      "cumulative_writedown": 0.0,
+      "realized_loss": 0.0,
+      "cumulative_realized_loss": 0.0,
+      "ending_principal": 7456076.0,
+      "cumulative_interest_paid": 0.0,
+      "cumulative_principal_paid": 0.0,
+      "cumulative_total_distribution": 0.0,
+      "cumulative_deferred_interest": 34028.70241111111,
+      "total_paid": 0.0,
+      "factor_beginning": 1000.0,
+      "factor_interest": 0.0,
+      "factor_principal": 0.0,
+      "factor_total": 0.0,
+      "factor_ending": 1000.0,
+      "record_date": "2023-08-19"
+    },
+    {
       "class_name": "BX",
       "cusip": "46656UAJ2",
       "class_type": "Exchangeable",
@@ -406,6 +366,46 @@
       "cumulative_principal_paid": 0.0,
       "cumulative_total_distribution": 0.0,
       "cumulative_deferred_interest": 97827.30518888889,
+      "total_paid": 0.0,
+      "factor_beginning": 1000.0,
+      "factor_interest": 0.0,
+      "factor_principal": 0.0,
+      "factor_total": 0.0,
+      "factor_ending": 1000.0,
+      "record_date": "2023-08-19"
+    },
+    {
+      "class_name": "A-IO-S",
+      "cusip": "46656UAK9",
+      "class_type": "Notional",
+      "original_principal": 112814180.0,
+      "beginning_principal": 112814180.0,
+      "interest_rate": 0.053,
+      "benchmark_rate": 0.053,
+      "accrual_start": "2023-07-20",
+      "accrual_end": "2023-08-19",
+      "days_accrued": 31,
+      "beginning_interest_carryforward": 0.0,
+      "interest_accrued": 514871.38261111116,
+      "total_interest_due": 514871.38261111116,
+      "interest_paid": 0.0,
+      "ending_interest_carryforward": 514871.38261111116,
+      "beginning_cap_carryover": 0.0,
+      "current_cap_carryover": 0.0,
+      "total_cap_carryover": 0.0,
+      "cap_carryover_paid": 0.0,
+      "ending_cap_carryover": 0.0,
+      "principal_paid": 0.0,
+      "writedown_amount": 0.0,
+      "writeup_amount": 0.0,
+      "cumulative_writedown": 0.0,
+      "realized_loss": 0.0,
+      "cumulative_realized_loss": 0.0,
+      "ending_principal": 112814180.0,
+      "cumulative_interest_paid": 0.0,
+      "cumulative_principal_paid": 0.0,
+      "cumulative_total_distribution": 0.0,
+      "cumulative_deferred_interest": 514871.38261111116,
       "total_paid": 0.0,
       "factor_beginning": 1000.0,
       "factor_interest": 0.0,
@@ -457,10 +457,10 @@
   ],
   "total_original_principal": 394217228.0,
   "total_beginning_principal": 507031408.0,
-  "total_interest_paid": 982009.7548611112,
-  "total_principal_paid": 4494505.619738887,
-  "total_paid": 5476515.374599998,
-  "total_ending_principal": 502536902.3802611,
+  "total_interest_paid": 860577.8250000001,
+  "total_principal_paid": 4615937.549599999,
+  "total_paid": 5476515.374599999,
+  "total_ending_principal": 502415470.4504,
   "original_pool_balance": 186391076.0,
   "prior_pool_balance": 191646127.5226004,
   "purchases": 0.0,
@@ -576,10 +576,10 @@
   "performance_history": [],
   "gross_interest_collected": 1492839.229499999,
   "servicing_fees_paid": 37598.02539999937,
-  "deal_fees_paid": 5710.0494119448695,
+  "deal_fees_paid": 23126.716078611535,
   "deal_expenses_paid": 0.0,
   "other_collections": 0.0,
-  "interest_remittance_amount": 1449531.1546880547,
+  "interest_remittance_amount": 1432114.488021388,
   "principal_scheduled": 0.0,
   "principal_curtailments": 2609509.1495999987,
   "principal_prepayments_full": 2006428.4,
@@ -589,7 +589,7 @@
   "principal_recoveries": 0.0,
   "principal_other": 0.0,
   "principal_remittance_amount": 4615937.549599999,
-  "available_funds": 6065468.704288053,
+  "available_funds": 6048052.037621386,
   "monthly_excess_cashflow": 0.0,
   "reserve_accounts": [
     {
@@ -661,7 +661,7 @@
       "ending_shortfall": 0.0
     },
     {
-      "fee_name": "Other Charges and Ancillary Income",
+      "fee_name": "Auction Costs",
       "beginning_shortfall": 0.0,
       "current_due": 0.0,
       "total_due": 0.0,
@@ -669,15 +669,7 @@
       "ending_shortfall": 0.0
     },
     {
-      "fee_name": "Participation Agent, Participation Owner Trustee, Participation Registrar, Custodian, and Indemnification Expenses",
-      "beginning_shortfall": 0.0,
-      "current_due": 0.0,
-      "total_due": 0.0,
-      "amount_paid": 0.0,
-      "ending_shortfall": 0.0
-    },
-    {
-      "fee_name": "Issuing Entity, Owner Trustee, Securities Administrator, and Indemnification Expenses",
+      "fee_name": "Review/Enforcement Expenses",
       "beginning_shortfall": 0.0,
       "current_due": 0.0,
       "total_due": 0.0,
@@ -703,21 +695,21 @@
     {
       "fee_name": "Securities Administrator Fee",
       "beginning_shortfall": 0.0,
-      "current_due": 333.3333333333333,
-      "total_due": 333.3333333333333,
-      "amount_paid": 333.3333333333333,
+      "current_due": 4000.0,
+      "total_due": 4000.0,
+      "amount_paid": 4000.0,
       "ending_shortfall": 0.0
     },
     {
       "fee_name": "Owner Trustee Fee",
       "beginning_shortfall": 0.0,
-      "current_due": 1250.0,
-      "total_due": 1250.0,
-      "amount_paid": 1250.0,
+      "current_due": 15000.0,
+      "total_due": 15000.0,
+      "amount_paid": 15000.0,
       "ending_shortfall": 0.0
     }
   ],
-  "total_fees": 43308.07481194424,
+  "total_fees": 60724.74147861091,
   "expenses_detail": [
     {
       "expense_name": "Indemnification Amount",
@@ -824,29 +816,40 @@
   "waterfall_trace_interest": [
     {
       "step": 1,
-      "description": "Pay interest to the Class A-1 Certificates",
+      "description": "Pay interest on the Class A-1 Certificates",
       "source_bucket": "interest_remittance",
-      "funds_available": 1449531.1546880547,
+      "funds_available": 1432114.488021388,
       "amount_owed": 766054.175,
       "amount_paid": 766054.175,
-      "funds_remaining": 683476.9796880546,
+      "funds_remaining": 666060.3130213879,
       "class_name": "A-1",
       "payment_type": "interest"
     },
     {
       "step": 4,
-      "description": "Pay interest to the Class M-1 Certificates  [formula: min(balances.get('M-1', 0), available_funds) = 683,476.98]",
+      "description": "Pay interest on the Class M-1 Certificates  [formula: min(balances.get('M-1', 0), available_funds) = 666,060.31]",
       "source_bucket": "interest_remittance",
-      "funds_available": 683476.9796880546,
-      "amount_owed": 683476.9796880546,
-      "amount_paid": 683476.9796880546,
+      "funds_available": 666060.3130213879,
+      "amount_owed": 666060.3130213879,
+      "amount_paid": 666060.3130213879,
       "funds_remaining": 0.0,
       "class_name": "M-1",
       "payment_type": "interest"
     },
     {
       "step": 5,
-      "description": "Pay interest to the Class B-1 Certificates  [formula: min(balances.get('B-1', 0), available_funds) = 0.00]",
+      "description": "Pay interest on the Class M-2 Certificates  [formula: min(balances.get('M-2', 0), available_funds) = 0.00]",
+      "source_bucket": "interest_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "M-2",
+      "payment_type": "interest"
+    },
+    {
+      "step": 6,
+      "description": "Pay interest on the Class B-1 Certificates  [formula: min(balances.get('B-1', 0), available_funds) = 0.00]",
       "source_bucket": "interest_remittance",
       "funds_available": 0.0,
       "amount_owed": 0.0,
@@ -854,27 +857,38 @@
       "funds_remaining": 0.0,
       "class_name": "B-1",
       "payment_type": "interest"
+    },
+    {
+      "step": 7,
+      "description": "Pay interest on the Class B-2 Certificates  [formula: min(balances.get('B-2', 0), available_funds) = 0.00]",
+      "source_bucket": "interest_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "B-2",
+      "payment_type": "interest"
+    },
+    {
+      "step": 8,
+      "description": "Pay interest on the Class B-3 Certificates  [formula: min(balances.get('B-3', 0), available_funds) = 0.00]",
+      "source_bucket": "interest_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "B-3",
+      "payment_type": "interest"
     }
   ],
   "waterfall_trace_principal": [
     {
       "step": 1,
-      "description": "Cover unpaid interest for Class A-IO-S from Principal Remittance",
-      "source_bucket": "principal_remittance",
-      "funds_available": 4615937.549599999,
-      "amount_owed": 121431.92986111112,
-      "amount_paid": 121431.92986111112,
-      "funds_remaining": 4494505.619738887,
-      "class_name": "A-IO-S",
-      "payment_type": "interest"
-    },
-    {
-      "step": 1,
       "description": "Pay principal to the Class A-1 Certificates until paid in full",
       "source_bucket": "principal_remittance",
-      "funds_available": 4494505.619738887,
+      "funds_available": 4615937.549599999,
       "amount_owed": 126186000.0,
-      "amount_paid": 4494505.619738887,
+      "amount_paid": 4615937.549599999,
       "funds_remaining": 0.0,
       "class_name": "A-1",
       "payment_type": "principal"
@@ -892,6 +906,17 @@
     },
     {
       "step": 5,
+      "description": "Pay principal to the Class M-2 Certificates until paid in full  [formula: min(balances.get('M-2', 0), available_funds) = 0.00]",
+      "source_bucket": "principal_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "M-2",
+      "payment_type": "principal"
+    },
+    {
+      "step": 6,
       "description": "Pay principal to the Class B-1 Certificates until paid in full  [formula: min(balances.get('B-1', 0), available_funds) = 0.00]",
       "source_bucket": "principal_remittance",
       "funds_available": 0.0,
@@ -900,29 +925,51 @@
       "funds_remaining": 0.0,
       "class_name": "B-1",
       "payment_type": "principal"
+    },
+    {
+      "step": 7,
+      "description": "Pay principal to the Class B-2 Certificates until paid in full  [formula: min(balances.get('B-2', 0), available_funds) = 0.00]",
+      "source_bucket": "principal_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "B-2",
+      "payment_type": "principal"
+    },
+    {
+      "step": 8,
+      "description": "Pay principal to the Class B-3 Certificates until paid in full  [formula: min(balances.get('B-3', 0), available_funds) = 0.00]",
+      "source_bucket": "principal_remittance",
+      "funds_available": 0.0,
+      "amount_owed": 0.0,
+      "amount_paid": 0.0,
+      "funds_remaining": 0.0,
+      "class_name": "B-3",
+      "payment_type": "principal"
     }
   ],
   "waterfall_trace_excess": [
     {
       "step": 1,
-      "description": "Deposit Monthly Excess Cashflow into the Excess Reserve Account  [formula: min(max(0, reserve_target - reserve_balance), available_funds) = 0.00]",
+      "description": "Deposit Monthly Excess Cashflow into the Excess Reserve Account until the required amount is reached  [formula: min(max(0, reserve_target - reserve_balance), available_funds) = 0.00]",
       "source_bucket": "excess_cashflow",
       "funds_available": 0.0,
       "amount_owed": 0.0,
       "amount_paid": 0.0,
       "funds_remaining": 0.0,
-      "class_name": null,
+      "class_name": "Excess Reserve Account",
       "payment_type": "reserve"
     },
     {
       "step": 2,
-      "description": "Distribute remaining Excess Cashflow to the Class X Certificates  [formula: available_funds = 0.00]",
+      "description": "Distribute remaining Monthly Excess Cashflow to the Class XS Certificates  [formula: available_funds = 0.00]",
       "source_bucket": "excess_cashflow",
       "funds_available": 0.0,
       "amount_owed": 0.0,
       "amount_paid": 0.0,
       "funds_remaining": 0.0,
-      "class_name": "X",
+      "class_name": "XS",
       "payment_type": "excess"
     }
   ],
@@ -37788,8 +37835,8 @@
       "modification_type": null
     }
   ],
-  "cumulative_interest_paid": 982009.7548611112,
-  "cumulative_principal_paid": 4494505.619738887,
+  "cumulative_interest_paid": 860577.8250000001,
+  "cumulative_principal_paid": 4615937.549599999,
   "cumulative_realized_losses": 0.0,
   "cumulative_prepayments": 4615937.549599999,
   "cumulative_defaults": 0.0,
@@ -37800,14 +37847,14 @@
     "net_wac": 0.10175751022770521,
     "wac_cap": 0.10175751022770521,
     "original_credit_support": {
-      "M-1": 0.17999829562655673,
-      "M-2": 0.11500054863141623,
-      "M-3": 0.9324967682465656
+      "M-1": 0.1399959727685675,
+      "M-2": 0.07499822577342705,
+      "M-3": 0.8924944453885765
     },
     "current_credit_support": {
-      "M-1": 0.17999829562655673,
-      "M-2": 0.11500054863141623,
-      "M-3": 0.9324967682465656
+      "M-1": 0.1399959727685675,
+      "M-2": 0.07499822577342705,
+      "M-3": 0.8924944453885765
     },
     "non_performing_loan_pct": 0.0007988900716439702,
     "charged_off_loan_pct": 0.0,
@@ -38118,7 +38165,7 @@
     {
       "label": "Total Distribution",
       "value": "$5.48M",
-      "raw": 5476515.374599998
+      "raw": 5476515.374599999
     },
     {
       "label": "Net WAC",
@@ -38170,15 +38217,11 @@
   "distribution_allocation": [
     {
       "bucket": "Senior Principal",
-      "amount": 4494505.619738887
+      "amount": 4615937.549599999
     },
     {
       "bucket": "Senior Interest",
       "amount": 766054.175
-    },
-    {
-      "bucket": "Class X / Excess",
-      "amount": 121431.92986111112
     },
     {
       "bucket": "Mezz Interest",
@@ -38186,13 +38229,17 @@
     },
     {
       "bucket": "Fees & Expenses",
-      "amount": 43308.07481194424
+      "amount": 60724.74147861091
     },
     {
       "bucket": "Sub Interest",
       "amount": 0.0
+    },
+    {
+      "bucket": "Class X / Excess",
+      "amount": 0.0
     }
   ],
-  "computed_at": "2026-05-19T06:31:22.154839",
+  "computed_at": "2026-05-21T11:18:24.488210",
   "computation_notes": null
 }
