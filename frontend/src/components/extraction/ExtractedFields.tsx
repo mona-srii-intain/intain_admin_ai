@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Edit3, Save, CheckCircle2, X, ChevronDown, ChevronUp,
   ShieldCheck, Plus, Trash2, ArrowUp, ArrowDown, Mail, Loader2,
@@ -389,9 +389,6 @@ function WaterfallTable({ label, wfPrefix, steps, editing, onUpdate, onDelete, o
   );
 }
 
-// Need React for Fragment
-import React from "react";
-
 // ─── Trigger logic editor (NL → Python expression) ──────────────────────────
 //
 // Users don't know the engine's variable names (e.g. `delinquency_60plus_pct`),
@@ -403,9 +400,10 @@ import React from "react";
 interface TriggerLogicEditorProps {
   trigger: TriggerTest;
   onUpdate: (patch: Partial<TriggerTest>) => void;
+  enableNlAssist?: boolean;
 }
 
-function TriggerLogicEditor({ trigger, onUpdate }: TriggerLogicEditorProps) {
+function TriggerLogicEditor({ trigger, onUpdate, enableNlAssist = true }: TriggerLogicEditorProps) {
   const [nlOpen, setNlOpen] = useState(false);
   const [nlText, setNlText] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -444,68 +442,72 @@ function TriggerLogicEditor({ trigger, onUpdate }: TriggerLogicEditorProps) {
 
   return (
     <div className="space-y-2 min-w-[280px]">
-      {/* NL → expression toggle */}
-      <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setNlOpen((v) => !v)}
-          className={`flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded transition-colors ${
-            nlOpen
-              ? "bg-purple-100 text-purple-700"
-              : "text-purple-600 hover:bg-purple-50"
-          }`}
-          title="Describe the trigger in plain English; the LLM will generate a valid expression"
-        >
-          <Sparkles size={11} />
-          {nlOpen ? "Hide plain-English input" : "Describe in plain English"}
-        </button>
-        {nlOpen && hasGenerated && (
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={generating || !nlText.trim()}
-            className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700 disabled:opacity-40"
-            title="Regenerate the expression"
-          >
-            <RefreshCw size={10} className={generating ? "animate-spin" : ""} />
-            Regenerate
-          </button>
-        )}
-      </div>
-
-      {nlOpen && (
-        <div className="border border-purple-200 bg-purple-50/40 rounded-md p-2 space-y-2">
-          <textarea
-            rows={3}
-            placeholder='e.g. "fires when the 6-month rolling 60+ day delinquency rate exceeds 5%"'
-            value={nlText}
-            onChange={(e) => setNlText(e.target.value)}
-            className="w-full px-2 py-1.5 text-xs border border-purple-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-purple-300 resize-y"
-          />
+      {enableNlAssist && (
+        <>
+          {/* NL → expression toggle */}
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] text-purple-600 leading-tight">
-              The generated expression below uses only variables known to the
-              waterfall engine.
-            </p>
             <button
               type="button"
-              onClick={handleGenerate}
-              disabled={generating || !nlText.trim()}
-              className="text-[11px] text-white bg-purple-600 hover:bg-purple-700 px-2.5 py-1 rounded disabled:opacity-40 flex items-center gap-1 flex-shrink-0"
+              onClick={() => setNlOpen((v) => !v)}
+              className={`flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded transition-colors ${
+                nlOpen
+                  ? "bg-purple-100 text-purple-700"
+                  : "text-purple-600 hover:bg-purple-50"
+              }`}
+              title="Describe the trigger in plain English; the LLM will generate a valid expression"
             >
-              {generating ? (
-                <><Loader2 size={10} className="animate-spin" /> Generating…</>
-              ) : (
-                <><Sparkles size={10} /> Generate</>
-              )}
+              <Sparkles size={11} />
+              {nlOpen ? "Hide plain-English input" : "Describe in plain English"}
             </button>
+            {nlOpen && hasGenerated && (
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={generating || !nlText.trim()}
+                className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-700 disabled:opacity-40"
+                title="Regenerate the expression"
+              >
+                <RefreshCw size={10} className={generating ? "animate-spin" : ""} />
+                Regenerate
+              </button>
+            )}
           </div>
-          {explanation && (
-            <p className="text-[10px] text-gray-600 bg-white border border-purple-100 rounded px-2 py-1 leading-snug">
-              {explanation}
-            </p>
+
+          {nlOpen && (
+            <div className="border border-purple-200 bg-purple-50/40 rounded-md p-2 space-y-2">
+              <textarea
+                rows={3}
+                placeholder='e.g. "fires when the 6-month rolling 60+ day delinquency rate exceeds 5%"'
+                value={nlText}
+                onChange={(e) => setNlText(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-purple-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-purple-300 resize-y"
+              />
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] text-purple-600 leading-tight">
+                  The generated expression below uses only variables known to the
+                  waterfall engine.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={generating || !nlText.trim()}
+                  className="text-[11px] text-white bg-purple-600 hover:bg-purple-700 px-2.5 py-1 rounded disabled:opacity-40 flex items-center gap-1 flex-shrink-0"
+                >
+                  {generating ? (
+                    <><Loader2 size={10} className="animate-spin" /> Generating…</>
+                  ) : (
+                    <><Sparkles size={10} /> Generate</>
+                  )}
+                </button>
+              </div>
+              {explanation && (
+                <p className="text-[10px] text-gray-600 bg-white border border-purple-100 rounded px-2 py-1 leading-snug">
+                  {explanation}
+                </p>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Manual condition + action — always visible, source of truth on save */}
@@ -551,6 +553,10 @@ const newTrigger = (): TriggerTest => ({ test_name: "", test_type: "oc", descrip
 interface Props {
   config: DealConfig;
   onSaved: (cfg: DealConfig) => void;
+  onPersist?: (cfg: DealConfig) => Promise<DealConfig | void>;
+  showPdfPanel?: boolean;
+  enableTriggerNlAssist?: boolean;
+  saveSuccessMessage?: string;
 }
 
 const normalise = (c: DealConfig): DealConfig => ({
@@ -566,7 +572,14 @@ const normalise = (c: DealConfig): DealConfig => ({
   loss_allocation_order: c.loss_allocation_order ?? [],
 });
 
-export default function ExtractedFields({ config: initial, onSaved }: Props) {
+export default function ExtractedFields({
+  config: initial,
+  onSaved,
+  onPersist,
+  showPdfPanel = true,
+  enableTriggerNlAssist = true,
+  saveSuccessMessage = "Saved and verified!",
+}: Props) {
   const [config, setConfig] = useState<DealConfig>(() => normalise(initial));
   // "saved baseline" — Discard resets to this (updates after every successful save)
   const [baseline, setBaseline] = useState<DealConfig>(() => normalise(initial));
@@ -595,7 +608,7 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
   // styling on save, not on each keystroke.
   const [overriddenValues, setOverriddenValues] = useState<Set<string>>(new Set());
 
-  const pdfUrl = initial.deal_id ? dealPdfUrl(initial.deal_id) : null;
+  const pdfUrl = showPdfPanel && initial.deal_id ? dealPdfUrl(initial.deal_id) : null;
 
   // Load annotations when deal config is available
   useEffect(() => {
@@ -614,7 +627,7 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
     if (!open[section]) setOpen((s) => ({ ...s, [section]: true }));
     // Surface the PDF panel automatically — even if the user previously collapsed it,
     // entering an edit is a strong signal they want to cross-check against the source.
-    setPdfPanelOpen(true);
+    if (showPdfPanel) setPdfPanelOpen(true);
   };
 
   const discardEdit = () => {
@@ -636,12 +649,14 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await submitReview({ deal_id: config.deal_id, reviewed_config: config, corrections: [], reviewer_name: "Admin", notes: "Reviewed via UI" });
-      toast.success("Saved and verified!");
-      const updated = normalise(config);
+      const persisted = onPersist
+        ? await onPersist(config)
+        : (await submitReview({ deal_id: config.deal_id, reviewed_config: config, corrections: [], reviewer_name: "Admin", notes: "Reviewed via UI" }), config);
+      toast.success(saveSuccessMessage);
+      const updated = normalise(persisted ?? config);
 
       // Capture overrides for the section that was just saved (if any).
-      if (editingSection) {
+      if (showPdfPanel && editingSection) {
         const newOverrides = computeOverridesForSection(editingSection, baseline, updated);
         if (newOverrides.length > 0) {
           setOverriddenValues((prev) => {
@@ -777,7 +792,7 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
   const thCls = "px-3 py-2.5 text-left text-xs font-semibold whitespace-nowrap";
   const tdCls = "px-3 py-2 text-sm";
 
-  const splitActive = editingSection !== null && pdfPanelOpen;
+  const splitActive = showPdfPanel && editingSection !== null && pdfPanelOpen && !!pdfUrl;
 
   return (
     <div className={`flex gap-4 fade-in ${splitActive ? "items-start" : ""}`}>
@@ -1203,6 +1218,7 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
                                 <TriggerLogicEditor
                                   trigger={t}
                                   onUpdate={(patch) => updTrigger(i, patch)}
+                                  enableNlAssist={enableTriggerNlAssist}
                                 />
                               ) : (t.trigger_condition || t.trigger_action) ? (
                                 <code className="block text-xs bg-gray-100 px-2 py-1.5 rounded font-mono text-gray-800 whitespace-pre min-w-[200px]">{`if ${t.trigger_condition || "…"}:\n    ${t.trigger_action || "…"} = True`}</code>
@@ -1289,7 +1305,7 @@ export default function ExtractedFields({ config: initial, onSaved }: Props) {
       )}
 
       {/* Floating reopen button when the user has collapsed the panel mid-edit. */}
-      {editingSection !== null && !pdfPanelOpen && (
+      {showPdfPanel && editingSection !== null && !pdfPanelOpen && (
         <button
           onClick={() => setPdfPanelOpen(true)}
           className="hidden lg:flex fixed right-4 top-24 z-40 items-center gap-1.5 bg-white border border-slate-200 rounded-full shadow-md px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"

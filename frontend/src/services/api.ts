@@ -1,6 +1,7 @@
 import axios from "axios";
+import type { DealConfig } from "../types";
 
-const BASE = "http://localhost:8000";
+const BASE = "http://localhost:8010";
 
 const api = axios.create({ baseURL: BASE });
 
@@ -49,6 +50,12 @@ export const listDeals = () =>
 
 export const getDeal = (dealId: string) =>
   api.get(`/api/deals/${dealId}`).then((r) => r.data);
+
+export const updateDealConfig = (dealId: string, dealConfig: DealConfig) =>
+  api.put(`/api/deals/${dealId}`, dealConfig).then((r) => r.data);
+
+export const deleteDealConfig = (dealId: string) =>
+  api.delete(`/api/deals/${dealId}`).then((r) => r.data);
 
 // ─── Trigger NL → Expression ─────────────────────────────────────────────────
 export interface TriggerExpression {

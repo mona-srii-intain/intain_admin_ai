@@ -61,6 +61,9 @@ for _name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
     _ulog = logging.getLogger(_name)
     _ulog.handlers = [_console_handler, _file_handler]
     _ulog.propagate = False
+# Avoid noisy auto-reload "X change(s) detected" info logs from watchfiles.
+for _name in ("watchfiles", "watchfiles.main"):
+    logging.getLogger(_name).setLevel(logging.WARNING)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -87,7 +90,7 @@ async def lifespan(app: FastAPI):
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     logger.info(f"Data directories ready: {DEALS_DIR}, {REPORTS_DIR}")
 
-    logger.info("Backend ready. Docs: http://localhost:8000/docs")
+    logger.info("Backend ready. Docs: http://localhost:8010/docs")
     yield
 
     # Shutdown
@@ -219,7 +222,8 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8010,
         reload=True,
+        reload_excludes=["logs/*", "logs/**", "data/*", "data/**"],
         log_level="info",
     )

@@ -98,7 +98,7 @@ async def get_payment_dates(deal_id: str):
     """
     query = f"""
         SELECT DISTINCT payment_date 
-        FROM IA_DEMO.PUBLIC.deal_info 
+        FROM IA_DEMO.PUBLIC.LOAN_TAPE 
         WHERE deal_id = '{deal_id}' 
         ORDER BY payment_date DESC
     """
