@@ -48,8 +48,116 @@ const fromPct = (s: string): number | null =>
 function TxtInput({ value, onChange, className = "" }: { value: string; onChange: (v: string) => void; className?: string }) {
   return <input className={`input text-sm py-1 px-2 ${className}`} value={value} onChange={(e) => onChange(e.target.value)} />;
 }
-function NumInput({ value, onChange, step = "any", min, className = "" }: { value: string | number; onChange: (v: string) => void; step?: string; min?: string; className?: string }) {
-  return <input type="number" step={step} min={min} className={`input text-sm py-1 px-2 ${className}`} value={value ?? ""} onChange={(e) => onChange(e.target.value)} />;
+function NumInput({
+  value,
+  onChange,
+  step = "any",
+  min,
+  className = "",
+}: {
+  value: string | number | null | undefined;
+  onChange: (v: string) => void;
+  step?: string;
+  min?: string;
+  className?: string;
+}) {
+  const [draft, setDraft] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const resolvedValue = value == null ? "" : String(value);
+  const visibleValue = isFocused ? draft : resolvedValue;
+
+  const isPartialNumber = (v: string) => /^-?\d*\.?\d*$/.test(v);
+  const isCompleteNumber = (v: string) => /^-?(?:\d+\.?\d*|\.\d+)$/.test(v);
+
+  const validateMin = (num: number) => {
+    if (min == null || min === "") return true;
+    const minNum = Number(min);
+    return Number.isFinite(minNum) ? num >= minNum : true;
+  };
+
+  const handleChange = (next: string) => {
+    if (!isPartialNumber(next)) {
+      setError("Enter numbers only.");
+      return;
+    }
+
+    setDraft(next);
+
+    if (next === "" || next === "-" || next === "." || next === "-." || next.endsWith(".")) {
+      setError("");
+      if (next === "") onChange("");
+      return;
+    }
+
+    const parsed = Number(next);
+    if (!Number.isFinite(parsed)) {
+      setError("Enter a valid number.");
+      return;
+    }
+    if (!validateMin(parsed)) {
+      setError(`Value must be >= ${min}.`);
+      return;
+    }
+
+    setError("");
+    onChange(next);
+  };
+
+  const handleBlur = () => {
+    const trimmed = draft.trim();
+
+    if (trimmed === "") {
+      setError("");
+      onChange("");
+      setIsFocused(false);
+      return;
+    }
+
+    if (!isCompleteNumber(trimmed)) {
+      setError("Enter a valid number.");
+      setIsFocused(false);
+      return;
+    }
+
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) {
+      setError("Enter a valid number.");
+      setIsFocused(false);
+      return;
+    }
+    if (!validateMin(parsed)) {
+      setError(`Value must be >= ${min}.`);
+      setIsFocused(false);
+      return;
+    }
+
+    setError("");
+    onChange(trimmed);
+    setIsFocused(false);
+  };
+
+  return (
+    <div className="w-full">
+      <input
+        type="text"
+        inputMode="decimal"
+        step={step}
+        min={min}
+        className={`input text-sm py-1 px-2 ${error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : ""} ${className}`}
+        value={visibleValue}
+        onFocus={() => {
+          setDraft(resolvedValue);
+          setError("");
+          setIsFocused(true);
+        }}
+        onBlur={handleBlur}
+        onChange={(e) => handleChange(e.target.value)}
+        aria-invalid={error ? "true" : "false"}
+      />
+      {error && <p className="mt-1 text-[10px] text-red-600">{error}</p>}
+    </div>
+  );
 }
 function SelectInput({ value, onChange, options, className = "" }: { value: string; onChange: (v: string) => void; options: string[]; className?: string }) {
   return (
@@ -848,9 +956,22 @@ export default function ExtractedFields({
                 ["Owner Trustee", "owner_trustee", false],
               ] as [string, string, boolean][]).map(([label, field, readOnly]) => (
                 <FieldGroup key={field} label={label}>
-                  {editing("deal") && !readOnly
-                    ? <TxtInput value={String((config as unknown as Record<string, unknown>)[field] ?? "")} onChange={(v) => setF(field, v || undefined)} />
-                    : <ViewVal val={String((config as unknown as Record<string, unknown>)[field] ?? "")} />}
+                  {editing("deal") && !readOnly ? (
+                    field === "interest_day_count" ? (
+                      <SelectInput
+                        value={String((config as unknown as Record<string, unknown>)[field] ?? "actual/360")}
+                        onChange={(v) => setF(field, v || undefined)}
+                        options={["30/360", "actual/360", "actual/365", "actual/actual"]}
+                      />
+                    ) : (
+                      <TxtInput
+                        value={String((config as unknown as Record<string, unknown>)[field] ?? "")}
+                        onChange={(v) => setF(field, v || undefined)}
+                      />
+                    )
+                  ) : (
+                    <ViewVal val={String((config as unknown as Record<string, unknown>)[field] ?? "")} />
+                  )}
                 </FieldGroup>
               ))}
               <FieldGroup label="Original Pool Balance ($)">
@@ -861,6 +982,18 @@ export default function ExtractedFields({
               </FieldGroup>
               <FieldGroup label="Default SOFR Rate (%)">
                 {editing("deal") ? <NumInput value={toPct(config.default_sofr_rate)} onChange={(v) => setF("default_sofr_rate", fromPct(v))} step="0.001" /> : <ViewVal val={fmtPctOrDash(config.default_sofr_rate)} />}
+              </FieldGroup>
+              <FieldGroup label="Accural Days (First Payment)">
+                {editing("deal")
+                  ? (
+                    <NumInput
+                      value={config.accrual_days ?? ""}
+                      onChange={(v) => setF("accrual_days", v === "" ? undefined : Math.max(1, Math.floor(Number(v))))}
+                      step="1"
+                      min="1"
+                    />
+                  )
+                  : <ViewVal val={config.accrual_days ?? "—"} />}
               </FieldGroup>
             </div>
             <FieldGroup label="Notes / Additional Rules">
@@ -938,7 +1071,7 @@ export default function ExtractedFields({
                       <tr className={`${i % 2 === 0 ? "table-row-even" : "table-row-odd"} group`}>
                         <td className="px-3 py-2 font-semibold text-primary-700">{editing("classes") ? <TxtInput value={cls.class_name} onChange={(v) => updClass(i, { class_name: v })} className="w-20" /> : cls.class_name}</td>
                         <td className={tdCls}>{editing("classes") ? <TxtInput value={cls.cusip ?? ""} onChange={(v) => updClass(i, { cusip: v || undefined })} className="w-32" /> : <span className="font-mono text-xs">{cls.cusip || "—"}</span>}</td>
-                        <td className={tdCls}>{editing("classes") ? <SelectInput value={cls.type} onChange={(v) => updClass(i, { type: v })} options={["Senior", "Mezzanine", "Subordinate", "IO", "Exchangeable", "Residual"]} className="w-32" /> : <span className={`badge ${cls.type === "Senior" ? "badge-green" : cls.type === "Residual" ? "badge-yellow" : "badge-blue"}`}>{cls.type}</span>}</td>
+                        <td className={tdCls}>{editing("classes") ? <SelectInput value={cls.type} onChange={(v) => updClass(i, { type: v })} options={["Senior", "Mezzanine", "Subordinate", "IO", "Exchangable", "Residual", "PO", "Excess Interest"]} className="w-32" /> : <span className={`badge ${cls.type === "Senior" ? "badge-green" : cls.type === "Residual" ? "badge-yellow" : "badge-blue"}`}>{cls.type}</span>}</td>
                         <td className={tdCls}>{editing("classes") ? <NumInput value={cls.initial_principal} onChange={(v) => updClass(i, { initial_principal: +v })} step="1000" className="w-36" /> : <span className="font-mono">${fmtNum(cls.initial_principal)}</span>}</td>
                         <td className={tdCls}>{editing("classes") ? <SelectInput value={cls.interest_rate_type} onChange={(v) => updClass(i, { interest_rate_type: v })} options={["floating", "fixed", "principal_only", "io", "excess_cashflow", "exchangeable", "residual"]} className="w-36" /> : <span className="capitalize">{cls.interest_rate_type}</span>}</td>
                         <td className={tdCls}>{editing("classes") ? <NumInput value={toPct(cls.margin)} onChange={(v) => updClass(i, { margin: fromPct(v) ?? undefined })} step="0.001" className="w-24" /> : fmtPctOrDash(cls.margin)}</td>

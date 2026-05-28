@@ -1,359 +1,313 @@
-2026-05-27 05:37:04,364 [INFO] uvicorn.error: Started server process [3437617]
-2026-05-27 05:37:04,365 [INFO] uvicorn.error: Waiting for application startup.
-2026-05-27 05:37:04,365 [INFO] uvicorn.error: Starting Intain Admin AI backend...
-2026-05-27 05:37:04,369 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
-2026-05-27 05:37:04,369 [INFO] uvicorn.error: Vault: logging in via AppRole
-2026-05-27 05:37:04,526 [INFO] uvicorn.error: Vault: AppRole login successful
-2026-05-27 05:37:04,526 [INFO] uvicorn.error: Vault: reading secret from configured path
-2026-05-27 05:37:04,669 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
-2026-05-27 05:37:04,669 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
-2026-05-27 05:37:04,669 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
-2026-05-27 05:37:04,670 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
-2026-05-27 05:37:05,474 [INFO] uvicorn.error: Snowflake: connected successfully
-2026-05-27 05:37:05,474 [INFO] uvicorn.error: Snowflake connection established
-2026-05-27 05:37:05,474 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
-2026-05-27 05:37:05,474 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
-2026-05-27 05:37:05,475 [INFO] uvicorn.error: Application startup complete.
-2026-05-27 05:38:13,317 [INFO] uvicorn.access: 127.0.0.1:43432 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:38:13,744 [INFO] uvicorn.access: 127.0.0.1:43432 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:38:57,966 [INFO] uvicorn.access: 127.0.0.1:54328 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:38:58,388 [INFO] uvicorn.access: 127.0.0.1:54328 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:38:59,960 [INFO] uvicorn.access: 127.0.0.1:37172 - "GET /api/loantape/deals HTTP/1.1" 200
-2026-05-27 05:39:00,409 [INFO] uvicorn.access: 127.0.0.1:37172 - "GET /api/loantape/deals HTTP/1.1" 200
-2026-05-27 05:39:04,930 [INFO] uvicorn.access: 127.0.0.1:37174 - "GET /api/deals/TESTH101 HTTP/1.1" 404
-2026-05-27 05:39:05,000 [INFO] uvicorn.access: 127.0.0.1:37172 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
-2026-05-27 05:39:09,391 [INFO] uvicorn.access: 127.0.0.1:37172 - "GET /api/loantape/TESTH101/summary?payment_date=2023-08-21 HTTP/1.1" 200
-2026-05-27 05:39:10,663 [INFO] uvicorn.access: 127.0.0.1:37172 - "OPTIONS /api/waterfall/compute HTTP/1.1" 200
-2026-05-27 05:39:11,947 [INFO] uvicorn.access: 127.0.0.1:46766 - "POST /api/waterfall/compute HTTP/1.1" 404
-2026-05-27 05:39:36,285 [INFO] uvicorn.error: [5%] Extracting PDF text and tables
-2026-05-27 05:39:47,675 [INFO] uvicorn.error: Extracted text from 371 pages of /tmp/tmp2z48az74.pdf
-2026-05-27 05:39:47,676 [INFO] uvicorn.error: Total pages: 371
-2026-05-27 05:39:47,676 [INFO] uvicorn.error: [12%] Scanning all pages for key values
-2026-05-27 05:39:48,037 [INFO] uvicorn.error: Regex anchored to certificate table section (4838 chars)
-2026-05-27 05:39:48,114 [INFO] uvicorn.error: Regex found class principals (cert-section anchored): {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
-2026-05-27 05:39:48,116 [INFO] uvicorn.error: Regex found class margins: {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05}
-2026-05-27 05:39:48,117 [INFO] uvicorn.error: Extracted margins for ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3'] from 'applicable margin' sentence
-2026-05-27 05:39:48,170 [INFO] uvicorn.error: Extracted SOFR margins for: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3']
-2026-05-27 05:39:48,233 [INFO] uvicorn.error: Detected special rate types: ['X', 'A-IO-S']
-2026-05-27 05:39:48,233 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type', 'special_rate_types']
-2026-05-27 05:39:48,234 [INFO] uvicorn.error: [18%] Identifying best pages per section
-2026-05-27 05:39:48,290 [INFO] uvicorn.error:   certificate_table: top pages = [17, 19, 25, 142, 221]
-2026-05-27 05:39:48,291 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 148, 149, 152, 14]
-2026-05-27 05:39:48,291 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
-2026-05-27 05:39:48,291 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
-2026-05-27 05:39:48,291 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
-2026-05-27 05:39:48,292 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
-2026-05-27 05:39:48,292 [INFO] uvicorn.error: [LLM #1] start  in_chars=22053
-2026-05-27 05:39:48,294 [INFO] uvicorn.error: [LLM #2] start  in_chars=26497
-2026-05-27 05:39:50,806 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:39:50,853 [INFO] uvicorn.error: [LLM #1] done in 2.6s  in_tok=5838 out_tok=366
-2026-05-27 05:39:56,014 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:39:56,063 [INFO] uvicorn.error: [LLM #2] done in 7.8s  in_tok=7125 out_tok=2052
-2026-05-27 05:39:56,847 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
-2026-05-27 05:39:56,850 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
-2026-05-27 05:39:56,850 [INFO] uvicorn.error: [Group A] wall-clock 8.6s
-2026-05-27 05:39:56,850 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: first_payment_date = 2023-07-20
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: benchmark = SOFR
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: interest_day_count = actual/360
-2026-05-27 05:39:56,850 [INFO] uvicorn.error:   Regex fallback: regex_class_principals = {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
-2026-05-27 05:39:56,851 [INFO] uvicorn.error:   Regex fallback: regex_class_margins = {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05, 'B-3': 0.05}
-2026-05-27 05:39:56,851 [INFO] uvicorn.error:   Regex fallback: special_rate_types = {'X': {'interest_rate_type': 'excess_cashflow', 'margin': 0.0}, 'A-IO-S': {'interest_rate_type': 'io', 'margin': 0.0}}
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: LLM extracted 10 certificate classes (before override)
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Direct-table override: M-1.initial_principal 10000000.0 → 14073000.0
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Direct-table override: M-2.initial_principal 5000000.0 → 12115000.0
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Margin override: M-2 0.035 → 0.03
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Direct-table override: B-1.initial_principal 5000000.0 → 6057000.0
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Direct-table override: B-2.initial_principal 2000000.0 → 3449000.0
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Margin override: B-2 0.055 → 0.05
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Direct-table override: B-3.initial_principal 1200000.0 → 4473000.0
-2026-05-27 05:39:56,851 [INFO] uvicorn.error: Margin override: B-3 0.065 → 0.05
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Direct-table added missing class: M-3
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Direct-table added missing class: B-4
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Direct-table added missing class: BX
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Direct-table added missing class: A-IO-S
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Direct-table added missing class: X
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: After authoritative override: 15 classes
-2026-05-27 05:39:56,852 [WARNING] uvicorn.error: Hallucination guard removed 4 LLM-invented classes not found in the document: ['A-2', 'A-3', 'B-XS', 'A-R']
-2026-05-27 05:39:56,852 [INFO] uvicorn.error: Reconciled class list (11): ['A-1', 'M-1', 'M-2', 'B-1', 'B-2', 'B-3', 'M-3', 'B-4', 'BX', 'A-IO-S', 'X']
-2026-05-27 05:39:56,853 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
-2026-05-27 05:39:56,853 [INFO] uvicorn.error: [LLM #3] start  in_chars=18943
-2026-05-27 05:39:56,854 [INFO] uvicorn.error: [LLM #4] start  in_chars=21538
-2026-05-27 05:39:56,854 [INFO] uvicorn.error: [LLM #5] start  in_chars=18327
-2026-05-27 05:40:06,434 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:40:06,437 [INFO] uvicorn.error: [LLM #5] done in 9.6s  in_tok=4209 out_tok=741
-2026-05-27 05:40:12,540 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:40:12,542 [INFO] uvicorn.error: [LLM #3] done in 15.7s  in_tok=4088 out_tok=1153
-2026-05-27 05:40:15,757 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:40:15,759 [INFO] uvicorn.error: [LLM #4] done in 18.9s  in_tok=3732 out_tok=1616
-2026-05-27 05:40:15,760 [INFO] uvicorn.error: [Group B] wall-clock 18.9s
-2026-05-27 05:40:15,760 [INFO] uvicorn.error: Extracted 13 fee entries
-2026-05-27 05:40:15,760 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 05:40:15,760 [WARNING] uvicorn.error: Removing waterfall step 4 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 05:40:15,760 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 05:40:15,760 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 05:40:15,761 [INFO] uvicorn.error: Extracted waterfall (after class filter): 7 interest, 6 principal, 3 excess steps
-2026-05-27 05:40:15,761 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
-2026-05-27 05:40:15,761 [INFO] uvicorn.error: Validation: re-querying for 1 missing fields
-2026-05-27 05:40:15,761 [INFO] uvicorn.error: [LLM #6] start  in_chars=22772
-2026-05-27 05:40:16,707 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:40:16,709 [INFO] uvicorn.error: [LLM #6] done in 0.9s  in_tok=6028 out_tok=65
-2026-05-27 05:40:16,709 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
-2026-05-27 05:40:16,710 [INFO] uvicorn.error: [LLM #7] start  in_chars=5504
-2026-05-27 05:40:23,791 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 05:40:23,793 [INFO] uvicorn.error: [LLM #7] done in 7.1s  in_tok=1459 out_tok=541
-2026-05-27 05:40:23,794 [INFO] uvicorn.error: Generated 9 step formulas
-2026-05-27 05:40:23,794 [INFO] uvicorn.error: [92%] Assembling deal configuration
-2026-05-27 05:40:23,794 [INFO] uvicorn.error: [100%] Extraction complete
-2026-05-27 05:40:23,795 [INFO] uvicorn.error: Extraction complete: 11 classes, 13 fees, 7 interest steps, 6 principal steps, confidence=0.85
-2026-05-27 05:40:23,810 [INFO] uvicorn.access: 127.0.0.1:51864 - "POST /api/deals/extract HTTP/1.1" 200
-2026-05-27 05:40:24,164 [INFO] uvicorn.access: 127.0.0.1:51864 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:40:24,379 [INFO] uvicorn.access: 127.0.0.1:51864 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:40:44,154 [INFO] uvicorn.access: 127.0.0.1:55492 - "OPTIONS /api/deals/review HTTP/1.1" 200
-2026-05-27 05:40:45,290 [INFO] uvicorn.access: 127.0.0.1:55508 - "POST /api/deals/review HTTP/1.1" 200
-2026-05-27 05:40:46,654 [INFO] uvicorn.access: 127.0.0.1:55508 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:40:46,880 [INFO] uvicorn.access: 127.0.0.1:55508 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:40:46,945 [INFO] uvicorn.access: 127.0.0.1:55492 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:50:33,230 [INFO] uvicorn.access: 127.0.0.1:59748 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:50:33,465 [INFO] uvicorn.access: 127.0.0.1:59748 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:50:33,709 [INFO] uvicorn.access: 127.0.0.1:59748 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:50:34,332 [INFO] uvicorn.access: 127.0.0.1:59760 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:50:35,014 [INFO] uvicorn.access: 127.0.0.1:59760 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:50:35,293 [INFO] uvicorn.access: 127.0.0.1:59760 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:52:32,769 [INFO] uvicorn.error: Shutting down
-2026-05-27 05:52:32,869 [INFO] uvicorn.error: Waiting for application shutdown.
-2026-05-27 05:52:32,870 [INFO] uvicorn.error: Shutting down...
-2026-05-27 05:52:32,870 [INFO] uvicorn.error: Application shutdown complete.
-2026-05-27 05:52:32,870 [INFO] uvicorn.error: Finished server process [3437617]
-2026-05-27 05:52:42,218 [INFO] uvicorn.error: Started server process [3452879]
-2026-05-27 05:52:42,218 [INFO] uvicorn.error: Waiting for application startup.
-2026-05-27 05:52:42,219 [INFO] uvicorn.error: Starting Intain Admin AI backend...
-2026-05-27 05:52:42,223 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
-2026-05-27 05:52:42,223 [INFO] uvicorn.error: Vault: logging in via AppRole
-2026-05-27 05:52:42,390 [INFO] uvicorn.error: Vault: AppRole login successful
-2026-05-27 05:52:42,390 [INFO] uvicorn.error: Vault: reading secret from configured path
-2026-05-27 05:52:42,538 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
-2026-05-27 05:52:42,539 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
-2026-05-27 05:52:42,539 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
-2026-05-27 05:52:42,540 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
-2026-05-27 05:52:43,417 [INFO] uvicorn.error: Snowflake: connected successfully
-2026-05-27 05:52:43,418 [INFO] uvicorn.error: Snowflake connection established
-2026-05-27 05:52:43,418 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
-2026-05-27 05:52:43,418 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
-2026-05-27 05:52:43,418 [INFO] uvicorn.error: Application startup complete.
-2026-05-27 05:53:21,184 [INFO] uvicorn.access: 127.0.0.1:39832 - "GET /api/loantape/deals HTTP/1.1" 200
-2026-05-27 05:53:21,544 [INFO] uvicorn.access: 127.0.0.1:39832 - "GET /api/loantape/deals HTTP/1.1" 200
-2026-05-27 05:53:35,546 [INFO] uvicorn.access: 127.0.0.1:38952 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:53:35,954 [INFO] uvicorn.access: 127.0.0.1:38952 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:53:36,384 [INFO] uvicorn.access: 127.0.0.1:38952 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 05:53:37,017 [INFO] uvicorn.access: 127.0.0.1:38964 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:53:37,445 [INFO] uvicorn.access: 127.0.0.1:38964 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:53:37,683 [INFO] uvicorn.access: 127.0.0.1:38964 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:54:14,210 [INFO] uvicorn.access: 127.0.0.1:45214 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:54:15,721 [INFO] uvicorn.access: 127.0.0.1:45224 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:54:15,990 [INFO] uvicorn.access: 127.0.0.1:45224 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:54:16,374 [INFO] uvicorn.access: 127.0.0.1:45224 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:54:16,594 [INFO] uvicorn.access: 127.0.0.1:45224 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:55:05,475 [INFO] uvicorn.access: 127.0.0.1:60268 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:55:05,885 [INFO] uvicorn.access: 127.0.0.1:60268 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 05:55:06,808 [INFO] uvicorn.access: 127.0.0.1:60268 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:55:07,029 [INFO] uvicorn.access: 127.0.0.1:60268 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 05:58:01,300 [INFO] uvicorn.access: 127.0.0.1:47360 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 06:17:57,779 [INFO] uvicorn.access: 127.0.0.1:32788 - "OPTIONS /api/deals/triggers/generate-expression HTTP/1.1" 200
-2026-05-27 06:17:59,098 [INFO] uvicorn.error: [LLM #1] start  in_chars=2595
-2026-05-27 06:18:00,603 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 06:18:00,613 [INFO] uvicorn.error: [LLM #1] done in 1.5s  in_tok=881 out_tok=54
-2026-05-27 06:18:00,613 [INFO] uvicorn.access: 127.0.0.1:51470 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 200
-2026-05-27 06:18:05,508 [INFO] uvicorn.access: 127.0.0.1:51470 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 06:18:06,701 [INFO] uvicorn.access: 127.0.0.1:51472 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 06:18:06,940 [INFO] uvicorn.access: 127.0.0.1:51472 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 06:18:07,569 [INFO] uvicorn.access: 127.0.0.1:51472 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 06:18:07,794 [INFO] uvicorn.access: 127.0.0.1:51472 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 06:21:49,994 [INFO] uvicorn.access: 127.0.0.1:51224 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 06:21:50,235 [INFO] uvicorn.access: 127.0.0.1:51224 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 06:21:52,669 [INFO] uvicorn.access: 127.0.0.1:51224 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 06:22:13,215 [INFO] uvicorn.access: 127.0.0.1:48172 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 07:11:05,976 [INFO] uvicorn.access: 127.0.0.1:59110 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 07:11:06,199 [INFO] uvicorn.access: 127.0.0.1:59110 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 07:11:06,420 [INFO] uvicorn.access: 127.0.0.1:59110 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 07:11:06,928 [INFO] uvicorn.access: 127.0.0.1:59118 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 07:11:07,239 [INFO] uvicorn.access: 127.0.0.1:59118 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 07:11:07,464 [INFO] uvicorn.access: 127.0.0.1:59118 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 08:53:30,660 [INFO] uvicorn.error: Started server process [3623668]
-2026-05-27 08:53:30,661 [INFO] uvicorn.error: Waiting for application startup.
-2026-05-27 08:53:30,661 [INFO] uvicorn.error: Starting Intain Admin AI backend...
-2026-05-27 08:53:30,665 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
-2026-05-27 08:53:30,665 [INFO] uvicorn.error: Vault: logging in via AppRole
-2026-05-27 08:53:30,799 [INFO] uvicorn.error: Vault: AppRole login successful
-2026-05-27 08:53:30,799 [INFO] uvicorn.error: Vault: reading secret from configured path
-2026-05-27 08:53:30,916 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
-2026-05-27 08:53:30,916 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
-2026-05-27 08:53:30,916 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
-2026-05-27 08:53:30,917 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
-2026-05-27 08:53:31,889 [INFO] uvicorn.error: Snowflake: connected successfully
-2026-05-27 08:53:31,890 [INFO] uvicorn.error: Snowflake connection established
-2026-05-27 08:53:31,890 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
-2026-05-27 08:53:31,890 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
-2026-05-27 08:53:31,890 [INFO] uvicorn.error: Application startup complete.
-2026-05-27 09:09:15,944 [INFO] uvicorn.error: Shutting down
-2026-05-27 09:09:16,047 [INFO] uvicorn.error: Waiting for application shutdown.
-2026-05-27 09:09:16,048 [INFO] uvicorn.error: Shutting down...
-2026-05-27 09:09:16,049 [INFO] uvicorn.error: Application shutdown complete.
-2026-05-27 09:09:16,049 [INFO] uvicorn.error: Finished server process [3623668]
-2026-05-27 09:09:25,723 [INFO] uvicorn.error: Started server process [3640779]
-2026-05-27 09:09:25,723 [INFO] uvicorn.error: Waiting for application startup.
-2026-05-27 09:09:25,724 [INFO] uvicorn.error: Starting Intain Admin AI backend...
-2026-05-27 09:09:25,727 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
-2026-05-27 09:09:25,727 [INFO] uvicorn.error: Vault: logging in via AppRole
-2026-05-27 09:09:25,858 [INFO] uvicorn.error: Vault: AppRole login successful
-2026-05-27 09:09:25,858 [INFO] uvicorn.error: Vault: reading secret from configured path
-2026-05-27 09:09:25,965 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
-2026-05-27 09:09:25,966 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
-2026-05-27 09:09:25,966 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
-2026-05-27 09:09:25,967 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
-2026-05-27 09:09:26,857 [INFO] uvicorn.error: Snowflake: connected successfully
-2026-05-27 09:09:26,858 [INFO] uvicorn.error: Snowflake connection established
-2026-05-27 09:09:26,858 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
-2026-05-27 09:09:26,858 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
-2026-05-27 09:09:26,858 [INFO] uvicorn.error: Application startup complete.
-2026-05-27 09:15:51,540 [INFO] uvicorn.error: Started server process [3649534]
-2026-05-27 09:15:51,540 [INFO] uvicorn.error: Waiting for application startup.
-2026-05-27 09:15:51,541 [INFO] uvicorn.error: Starting Intain Admin AI backend...
-2026-05-27 09:15:51,544 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
-2026-05-27 09:15:51,545 [INFO] uvicorn.error: Vault: logging in via AppRole
-2026-05-27 09:15:51,660 [INFO] uvicorn.error: Vault: AppRole login successful
-2026-05-27 09:15:51,660 [INFO] uvicorn.error: Vault: reading secret from configured path
-2026-05-27 09:15:51,810 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
-2026-05-27 09:15:51,810 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
-2026-05-27 09:15:51,811 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
-2026-05-27 09:15:51,811 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
-2026-05-27 09:15:52,733 [INFO] uvicorn.error: Snowflake: connected successfully
-2026-05-27 09:15:52,733 [INFO] uvicorn.error: Snowflake connection established
-2026-05-27 09:15:52,734 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
-2026-05-27 09:15:52,734 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
-2026-05-27 09:15:52,734 [INFO] uvicorn.error: Application startup complete.
-2026-05-27 09:16:44,436 [INFO] uvicorn.error: [5%] Extracting PDF text and tables
-2026-05-27 09:16:56,812 [INFO] uvicorn.error: Extracted text from 371 pages of /tmp/tmp0xw5fo89.pdf
-2026-05-27 09:16:56,812 [INFO] uvicorn.error: Total pages: 371
-2026-05-27 09:16:56,812 [INFO] uvicorn.error: [12%] Scanning all pages for key values
-2026-05-27 09:16:57,483 [INFO] uvicorn.error: Regex anchored to certificate table section (4838 chars)
-2026-05-27 09:16:57,562 [INFO] uvicorn.error: Regex found class principals (cert-section anchored): {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
-2026-05-27 09:16:57,565 [INFO] uvicorn.error: Regex found class margins: {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05}
-2026-05-27 09:16:57,566 [INFO] uvicorn.error: Extracted margins for ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3'] from 'applicable margin' sentence
-2026-05-27 09:16:57,626 [INFO] uvicorn.error: Extracted SOFR margins for: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3']
-2026-05-27 09:16:57,689 [INFO] uvicorn.error: Detected special rate types: ['X', 'A-IO-S']
-2026-05-27 09:16:57,689 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type', 'special_rate_types']
-2026-05-27 09:16:57,689 [INFO] uvicorn.error: [18%] Identifying best pages per section
-2026-05-27 09:16:57,749 [INFO] uvicorn.error:   certificate_table: top pages = [17, 19, 25, 142, 221]
-2026-05-27 09:16:57,749 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 148, 149, 152, 14]
-2026-05-27 09:16:57,749 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
-2026-05-27 09:16:57,749 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
-2026-05-27 09:16:57,749 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
-2026-05-27 09:16:57,750 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
-2026-05-27 09:16:57,750 [INFO] uvicorn.error: [LLM #1] start  in_chars=22053
-2026-05-27 09:16:58,408 [INFO] uvicorn.error: [LLM #2] start  in_chars=26497
-2026-05-27 09:17:01,162 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:01,235 [INFO] uvicorn.error: [LLM #1] done in 3.5s  in_tok=5838 out_tok=379
-2026-05-27 09:17:07,827 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
-2026-05-27 09:17:07,831 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
-2026-05-27 09:17:07,850 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:07,853 [INFO] uvicorn.error: [LLM #2] done in 9.4s  in_tok=7125 out_tok=2252
-2026-05-27 09:17:07,853 [INFO] uvicorn.error: [Group A] wall-clock 10.1s
-2026-05-27 09:17:07,853 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
-2026-05-27 09:17:07,853 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
-2026-05-27 09:17:07,853 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
-2026-05-27 09:17:07,853 [INFO] uvicorn.error:   Regex fallback: regex_class_principals = {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
-2026-05-27 09:17:07,853 [INFO] uvicorn.error:   Regex fallback: regex_class_margins = {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05, 'B-3': 0.05}
-2026-05-27 09:17:07,854 [INFO] uvicorn.error:   Regex fallback: special_rate_types = {'X': {'interest_rate_type': 'excess_cashflow', 'margin': 0.0}, 'A-IO-S': {'interest_rate_type': 'io', 'margin': 0.0}}
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: LLM extracted 11 certificate classes (before override)
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Direct-table override: M-1.initial_principal 12000000.0 → 14073000.0
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Direct-table override: B-1.initial_principal 8000000.0 → 6057000.0
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Margin override: B-1 0.035 → 0.045
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Direct-table override: B-2.initial_principal 5000000.0 → 3449000.0
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Margin override: B-2 0.045 → 0.05
-2026-05-27 09:17:07,854 [INFO] uvicorn.error: Direct-table override: B-3.initial_principal 3200000.0 → 4473000.0
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Margin override: B-3 0.055 → 0.05
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table override: B-4.initial_principal 2000000.0 → 7456076.0
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table override: BX.initial_principal 1000000.0 → 21435076.0
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table override: A-IO-S.initial_principal 126186000.0 → 112814180.0
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table added missing class: M-2
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table added missing class: M-3
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: Direct-table added missing class: X
-2026-05-27 09:17:07,855 [INFO] uvicorn.error: After authoritative override: 14 classes
-2026-05-27 09:17:07,856 [WARNING] uvicorn.error: Hallucination guard removed 3 LLM-invented classes not found in the document: ['A-2', 'B-5', 'A-R']
-2026-05-27 09:17:07,856 [INFO] uvicorn.error: Reconciled class list (11): ['A-1', 'M-1', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'M-2', 'M-3', 'X']
-2026-05-27 09:17:07,856 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
-2026-05-27 09:17:07,856 [INFO] uvicorn.error: [LLM #3] start  in_chars=18943
-2026-05-27 09:17:07,857 [INFO] uvicorn.error: [LLM #4] start  in_chars=21538
-2026-05-27 09:17:07,857 [INFO] uvicorn.error: [LLM #5] start  in_chars=18327
-2026-05-27 09:17:17,536 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:17,538 [INFO] uvicorn.error: [LLM #5] done in 9.7s  in_tok=4209 out_tok=668
-2026-05-27 09:17:21,017 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:21,019 [INFO] uvicorn.error: [LLM #3] done in 13.2s  in_tok=4088 out_tok=955
-2026-05-27 09:17:26,242 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:26,245 [INFO] uvicorn.error: [LLM #4] done in 18.4s  in_tok=3732 out_tok=1493
-2026-05-27 09:17:26,245 [INFO] uvicorn.error: [Group B] wall-clock 18.4s
-2026-05-27 09:17:26,245 [INFO] uvicorn.error: Extracted 12 fee entries
-2026-05-27 09:17:26,246 [WARNING] uvicorn.error: Removing waterfall step 5 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 09:17:26,246 [WARNING] uvicorn.error: Removing waterfall step 6 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 09:17:26,246 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 09:17:26,246 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
-2026-05-27 09:17:26,246 [INFO] uvicorn.error: Extracted waterfall (after class filter): 9 interest, 6 principal, 2 excess steps
-2026-05-27 09:17:26,246 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
-2026-05-27 09:17:26,247 [INFO] uvicorn.error: Validation: re-querying for 1 missing fields
-2026-05-27 09:17:26,247 [INFO] uvicorn.error: [LLM #6] start  in_chars=22749
-2026-05-27 09:17:27,421 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:27,424 [INFO] uvicorn.error: [LLM #6] done in 1.2s  in_tok=6014 out_tok=42
-2026-05-27 09:17:27,424 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
-2026-05-27 09:17:27,425 [INFO] uvicorn.error: [LLM #7] start  in_chars=4846
-2026-05-27 09:17:34,049 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
-2026-05-27 09:17:34,051 [INFO] uvicorn.error: [LLM #7] done in 6.6s  in_tok=1334 out_tok=498
-2026-05-27 09:17:34,052 [INFO] uvicorn.error: Generated 11 step formulas
-2026-05-27 09:17:34,052 [INFO] uvicorn.error: [92%] Assembling deal configuration
-2026-05-27 09:17:34,053 [INFO] uvicorn.error: [100%] Extraction complete
-2026-05-27 09:17:34,053 [INFO] uvicorn.error: Extraction complete: 11 classes, 12 fees, 9 interest steps, 6 principal steps, confidence=0.85
-2026-05-27 09:17:34,079 [INFO] uvicorn.access: 127.0.0.1:53578 - "POST /api/deals/extract HTTP/1.1" 200
-2026-05-27 09:17:34,539 [INFO] uvicorn.access: 127.0.0.1:53578 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:17:34,794 [INFO] uvicorn.access: 127.0.0.1:53578 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:17:43,468 [INFO] uvicorn.access: 127.0.0.1:37504 - "OPTIONS /api/deals/review HTTP/1.1" 200
-2026-05-27 09:17:44,500 [INFO] uvicorn.access: 127.0.0.1:37520 - "POST /api/deals/review HTTP/1.1" 200
-2026-05-27 09:17:46,382 [INFO] uvicorn.access: 127.0.0.1:37520 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 09:17:46,642 [INFO] uvicorn.access: 127.0.0.1:37520 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 09:17:46,704 [INFO] uvicorn.access: 127.0.0.1:37504 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:17:46,911 [INFO] uvicorn.access: 127.0.0.1:37520 - "GET /api/deals HTTP/1.1" 200
-2026-05-27 09:17:47,327 [INFO] uvicorn.access: 127.0.0.1:37520 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:17:47,592 [INFO] uvicorn.access: 127.0.0.1:37520 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:18:20,307 [INFO] uvicorn.access: 127.0.0.1:35980 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:18:21,340 [INFO] uvicorn.access: 127.0.0.1:35994 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:18:21,606 [INFO] uvicorn.access: 127.0.0.1:35994 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:18:22,028 [INFO] uvicorn.access: 127.0.0.1:35994 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:18:22,276 [INFO] uvicorn.access: 127.0.0.1:35994 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:22:26,769 [INFO] uvicorn.access: 127.0.0.1:39816 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:22:27,020 [INFO] uvicorn.access: 127.0.0.1:39816 - "GET /api/deals/TESTH101 HTTP/1.1" 200
-2026-05-27 09:22:27,436 [INFO] uvicorn.access: 127.0.0.1:39816 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:22:27,698 [INFO] uvicorn.access: 127.0.0.1:39816 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
-2026-05-27 09:28:32,799 [INFO] uvicorn.error: Shutting down
-2026-05-27 09:28:32,900 [INFO] uvicorn.error: Finished server process [3649534]
-2026-05-27 09:28:32,902 [ERROR] uvicorn.error: Traceback (most recent call last):
+2026-05-28 05:42:04,879 [INFO] uvicorn.error: Started server process [579441]
+2026-05-28 05:42:04,880 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 05:42:04,881 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 05:42:04,884 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 05:42:04,884 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 05:42:05,031 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 05:42:05,032 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 05:42:05,221 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 05:42:05,221 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 05:42:05,221 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 05:42:05,222 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 05:42:06,264 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 05:42:06,264 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 05:42:06,265 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 05:42:06,265 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 05:42:06,265 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 05:48:56,605 [INFO] uvicorn.error: [5%] Extracting PDF text and tables
+2026-05-28 05:49:08,059 [INFO] uvicorn.error: Extracted text from 371 pages of /tmp/tmpq5zr96rb.pdf
+2026-05-28 05:49:08,059 [INFO] uvicorn.error: Total pages: 371
+2026-05-28 05:49:08,059 [INFO] uvicorn.error: [12%] Scanning all pages for key values
+2026-05-28 05:49:08,414 [INFO] uvicorn.error: Regex anchored to certificate table section (4838 chars)
+2026-05-28 05:49:08,489 [INFO] uvicorn.error: Regex found class principals (cert-section anchored): {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
+2026-05-28 05:49:08,491 [INFO] uvicorn.error: Regex found class margins: {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05}
+2026-05-28 05:49:08,492 [INFO] uvicorn.error: Extracted margins for ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3'] from 'applicable margin' sentence
+2026-05-28 05:49:08,545 [INFO] uvicorn.error: Extracted SOFR margins for: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3']
+2026-05-28 05:49:08,608 [INFO] uvicorn.error: Detected special rate types: ['X', 'A-IO-S']
+2026-05-28 05:49:08,608 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type', 'special_rate_types']
+2026-05-28 05:49:08,609 [INFO] uvicorn.error: [18%] Identifying best pages per section
+2026-05-28 05:49:08,666 [INFO] uvicorn.error:   certificate_table: top pages = [17, 19, 25, 142, 221]
+2026-05-28 05:49:08,666 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 148, 149, 152, 14]
+2026-05-28 05:49:08,666 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
+2026-05-28 05:49:08,666 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
+2026-05-28 05:49:08,666 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
+2026-05-28 05:49:08,667 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
+2026-05-28 05:49:08,667 [INFO] uvicorn.error: [LLM #1] start  in_chars=22053
+2026-05-28 05:49:08,671 [INFO] uvicorn.error: [LLM #2] start  in_chars=26497
+2026-05-28 05:49:11,141 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:11,192 [INFO] uvicorn.error: [LLM #1] done in 2.5s  in_tok=5838 out_tok=366
+2026-05-28 05:49:17,365 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:17,394 [INFO] uvicorn.error: [LLM #2] done in 8.7s  in_tok=7125 out_tok=2270
+2026-05-28 05:49:17,433 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
+2026-05-28 05:49:17,436 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 05:49:17,437 [INFO] uvicorn.error: [Group A] wall-clock 8.8s
+2026-05-28 05:49:17,437 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: first_payment_date = 2023-07-20
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: benchmark = SOFR
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: interest_day_count = actual/360
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: regex_class_principals = {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: regex_class_margins = {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05, 'B-3': 0.05}
+2026-05-28 05:49:17,437 [INFO] uvicorn.error:   Regex fallback: special_rate_types = {'X': {'interest_rate_type': 'excess_cashflow', 'margin': 0.0}, 'A-IO-S': {'interest_rate_type': 'io', 'margin': 0.0}}
+2026-05-28 05:49:17,437 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: LLM extracted 11 certificate classes (before override)
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: M-1.initial_principal 10000000.0 → 14073000.0
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: M-2.initial_principal 5000000.0 → 12115000.0
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Margin override: M-2 0.035 → 0.03
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: B-1.initial_principal 3000000.0 → 6057000.0
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: B-2.initial_principal 2000000.0 → 3449000.0
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Margin override: B-2 0.055 → 0.05
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: B-3.initial_principal 1000000.0 → 4473000.0
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Margin override: B-3 0.065 → 0.05
+2026-05-28 05:49:17,438 [INFO] uvicorn.error: Direct-table override: A-IO-S.initial_principal 186391076.0 → 112814180.0
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: Direct-table override: BX.initial_principal 1000000.0 → 21435076.0
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: Direct-table added missing class: M-3
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: Direct-table added missing class: B-4
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: Direct-table added missing class: X
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: After authoritative override: 14 classes
+2026-05-28 05:49:17,439 [WARNING] uvicorn.error: Hallucination guard removed 3 LLM-invented classes not found in the document: ['A-2', 'A-3', 'A-R']
+2026-05-28 05:49:17,439 [INFO] uvicorn.error: Reconciled class list (11): ['A-1', 'M-1', 'M-2', 'B-1', 'B-2', 'B-3', 'A-IO-S', 'BX', 'M-3', 'B-4', 'X']
+2026-05-28 05:49:17,440 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
+2026-05-28 05:49:17,440 [INFO] uvicorn.error: [LLM #3] start  in_chars=18943
+2026-05-28 05:49:17,440 [INFO] uvicorn.error: [LLM #4] start  in_chars=21538
+2026-05-28 05:49:17,441 [INFO] uvicorn.error: [LLM #5] start  in_chars=18327
+2026-05-28 05:49:26,831 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:26,834 [INFO] uvicorn.error: [LLM #5] done in 9.4s  in_tok=4209 out_tok=723
+2026-05-28 05:49:28,012 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:28,015 [INFO] uvicorn.error: [LLM #3] done in 10.6s  in_tok=4088 out_tok=845
+2026-05-28 05:49:33,769 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:33,771 [INFO] uvicorn.error: [LLM #4] done in 16.3s  in_tok=3732 out_tok=1339
+2026-05-28 05:49:33,772 [INFO] uvicorn.error: [Group B] wall-clock 16.3s
+2026-05-28 05:49:33,772 [INFO] uvicorn.error: Extracted 11 fee entries
+2026-05-28 05:49:33,772 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 05:49:33,772 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 05:49:33,772 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 05:49:33,773 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 05:49:33,773 [INFO] uvicorn.error: Extracted waterfall (after class filter): 5 interest, 5 principal, 2 excess steps
+2026-05-28 05:49:33,773 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
+2026-05-28 05:49:33,773 [INFO] uvicorn.error: Validation: re-querying for 1 missing fields
+2026-05-28 05:49:33,774 [INFO] uvicorn.error: [LLM #6] start  in_chars=22756
+2026-05-28 05:49:34,994 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:34,996 [INFO] uvicorn.error: [LLM #6] done in 1.2s  in_tok=6019 out_tok=23
+2026-05-28 05:49:34,996 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
+2026-05-28 05:49:34,997 [INFO] uvicorn.error: [LLM #7] start  in_chars=4219
+2026-05-28 05:49:39,879 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 05:49:39,881 [INFO] uvicorn.error: [LLM #7] done in 4.9s  in_tok=1144 out_tok=347
+2026-05-28 05:49:39,882 [INFO] uvicorn.error: Generated 6 step formulas
+2026-05-28 05:49:39,882 [INFO] uvicorn.error: [92%] Assembling deal configuration
+2026-05-28 05:49:39,882 [INFO] uvicorn.error: [100%] Extraction complete
+2026-05-28 05:49:39,883 [INFO] uvicorn.error: Extraction complete: 11 classes, 11 fees, 5 interest steps, 5 principal steps, confidence=0.85
+2026-05-28 05:49:39,899 [INFO] uvicorn.access: 127.0.0.1:52350 - "POST /api/deals/extract HTTP/1.1" 200
+2026-05-28 05:49:40,283 [INFO] uvicorn.access: 127.0.0.1:52350 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 05:49:40,484 [INFO] uvicorn.access: 127.0.0.1:52350 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 05:50:04,929 [INFO] uvicorn.access: 127.0.0.1:59032 - "OPTIONS /api/deals/review HTTP/1.1" 200
+2026-05-28 05:50:06,163 [INFO] uvicorn.access: 127.0.0.1:59034 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:00:59,882 [INFO] uvicorn.access: 127.0.0.1:36032 - "OPTIONS /api/deals/review HTTP/1.1" 200
+2026-05-28 06:01:01,118 [INFO] uvicorn.access: 127.0.0.1:36036 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:01:30,608 [INFO] uvicorn.access: 127.0.0.1:40954 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:01:46,573 [INFO] uvicorn.access: 127.0.0.1:54268 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:08:00,547 [INFO] uvicorn.access: 127.0.0.1:35602 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:09:26,769 [INFO] uvicorn.access: 127.0.0.1:48092 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 06:17:28,983 [INFO] uvicorn.error: Shutting down
+2026-05-28 06:17:29,084 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 06:17:29,084 [INFO] uvicorn.error: Shutting down...
+2026-05-28 06:17:29,084 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 06:17:29,085 [INFO] uvicorn.error: Finished server process [579441]
+2026-05-28 06:40:08,508 [INFO] uvicorn.error: Started server process [632108]
+2026-05-28 06:40:08,508 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 06:40:08,509 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 06:40:08,512 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 06:40:08,512 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 06:40:08,667 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 06:40:08,667 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 06:40:08,846 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 06:40:08,846 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 06:40:08,847 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 06:40:08,848 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 06:40:09,721 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 06:40:09,722 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 06:40:09,722 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 06:40:09,722 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 06:40:09,722 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 06:40:14,746 [INFO] uvicorn.access: 127.0.0.1:59360 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 06:40:14,952 [INFO] uvicorn.access: 127.0.0.1:59360 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 06:40:15,028 [INFO] uvicorn.access: 127.0.0.1:59356 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:40:15,305 [INFO] uvicorn.access: 127.0.0.1:59360 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 06:40:15,475 [INFO] uvicorn.access: 127.0.0.1:59356 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:40:15,736 [INFO] uvicorn.access: 127.0.0.1:59356 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:40:25,338 [INFO] uvicorn.access: 127.0.0.1:50634 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:40:26,343 [INFO] uvicorn.access: 127.0.0.1:50650 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:40:26,566 [INFO] uvicorn.access: 127.0.0.1:50650 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:40:27,089 [INFO] uvicorn.access: 127.0.0.1:50650 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:40:27,289 [INFO] uvicorn.access: 127.0.0.1:50634 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:44:17,585 [INFO] uvicorn.access: 127.0.0.1:49468 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:44:17,834 [INFO] uvicorn.access: 127.0.0.1:49468 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 06:44:18,161 [INFO] uvicorn.access: 127.0.0.1:49468 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:44:19,010 [INFO] uvicorn.access: 127.0.0.1:46934 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:44:21,619 [INFO] uvicorn.access: 127.0.0.1:46934 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 06:44:22,029 [INFO] uvicorn.access: 127.0.0.1:46934 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 06:48:27,615 [INFO] uvicorn.error: [5%] Extracting PDF text and tables
+2026-05-28 06:48:38,393 [INFO] uvicorn.error: Extracted text from 371 pages of /tmp/tmphyjbleq4.pdf
+2026-05-28 06:48:38,393 [INFO] uvicorn.error: Total pages: 371
+2026-05-28 06:48:38,394 [INFO] uvicorn.error: [12%] Scanning all pages for key values
+2026-05-28 06:48:38,743 [INFO] uvicorn.error: Regex anchored to certificate table section (4838 chars)
+2026-05-28 06:48:38,822 [INFO] uvicorn.error: Regex found class principals (cert-section anchored): {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
+2026-05-28 06:48:38,824 [INFO] uvicorn.error: Regex found class margins: {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05}
+2026-05-28 06:48:38,826 [INFO] uvicorn.error: Extracted margins for ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3'] from 'applicable margin' sentence
+2026-05-28 06:48:38,880 [INFO] uvicorn.error: Extracted SOFR margins for: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3']
+2026-05-28 06:48:38,950 [INFO] uvicorn.error: Detected special rate types: ['X', 'A-IO-S']
+2026-05-28 06:48:38,950 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type', 'special_rate_types']
+2026-05-28 06:48:38,951 [INFO] uvicorn.error: [18%] Identifying best pages per section
+2026-05-28 06:48:39,009 [INFO] uvicorn.error:   certificate_table: top pages = [17, 19, 25, 142, 221]
+2026-05-28 06:48:39,010 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 148, 149, 152, 14]
+2026-05-28 06:48:39,010 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
+2026-05-28 06:48:39,010 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
+2026-05-28 06:48:39,010 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
+2026-05-28 06:48:39,011 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
+2026-05-28 06:48:39,011 [INFO] uvicorn.error: [LLM #1] start  in_chars=22053
+2026-05-28 06:48:39,014 [INFO] uvicorn.error: [LLM #2] start  in_chars=26497
+2026-05-28 06:48:45,294 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:48:45,335 [INFO] uvicorn.error: [LLM #1] done in 6.3s  in_tok=5838 out_tok=783
+2026-05-28 06:48:47,305 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
+2026-05-28 06:48:47,308 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 06:48:48,177 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:48:48,179 [INFO] uvicorn.error: [LLM #2] done in 9.2s  in_tok=7125 out_tok=2270
+2026-05-28 06:48:48,180 [INFO] uvicorn.error: [Group A] wall-clock 9.2s
+2026-05-28 06:48:48,180 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 06:48:48,180 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
+2026-05-28 06:48:48,180 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
+2026-05-28 06:48:48,180 [INFO] uvicorn.error:   Regex fallback: regex_class_principals = {'A-1': 126186000.0, 'M-1': 14073000.0, 'M-2': 12115000.0, 'M-3': 12582000.0, 'B-1': 6057000.0, 'B-2': 3449000.0, 'B-3': 4473000.0, 'B-4': 7456076.0, 'BX': 21435076.0, 'A-IO-S': 112814180.0, 'X': 186391076.0}
+2026-05-28 06:48:48,180 [INFO] uvicorn.error:   Regex fallback: regex_class_margins = {'A-1': 0.0175, 'M-1': 0.025, 'M-2': 0.03, 'M-3': 0.035, 'B-1': 0.045, 'B-2': 0.05, 'B-3': 0.05}
+2026-05-28 06:48:48,180 [INFO] uvicorn.error:   Regex fallback: special_rate_types = {'X': {'interest_rate_type': 'excess_cashflow', 'margin': 0.0}, 'A-IO-S': {'interest_rate_type': 'io', 'margin': 0.0}}
+2026-05-28 06:48:48,180 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: LLM extracted 11 certificate classes (before override)
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: M-1.initial_principal 10000000.0 → 14073000.0
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: M-2.initial_principal 5000000.0 → 12115000.0
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Margin override: M-2 0.035 → 0.03
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: B-1.initial_principal 5000000.0 → 6057000.0
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: B-2.initial_principal 2000000.0 → 3449000.0
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Margin override: B-2 0.055 → 0.05
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: B-3.initial_principal 1200000.0 → 4473000.0
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Margin override: B-3 0.065 → 0.05
+2026-05-28 06:48:48,181 [INFO] uvicorn.error: Direct-table override: A-IO-S.initial_principal 126186000.0 → 112814180.0
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: Direct-table override: BX.initial_principal 186391076.0 → 21435076.0
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: Direct-table added missing class: M-3
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: Direct-table added missing class: B-4
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: Direct-table added missing class: X
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: After authoritative override: 14 classes
+2026-05-28 06:48:48,182 [WARNING] uvicorn.error: Hallucination guard removed 3 LLM-invented classes not found in the document: ['A-2', 'A-3', 'A-R']
+2026-05-28 06:48:48,182 [INFO] uvicorn.error: Reconciled class list (11): ['A-1', 'M-1', 'M-2', 'B-1', 'B-2', 'B-3', 'A-IO-S', 'BX', 'M-3', 'B-4', 'X']
+2026-05-28 06:48:48,183 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
+2026-05-28 06:48:48,183 [INFO] uvicorn.error: [LLM #3] start  in_chars=18943
+2026-05-28 06:48:48,183 [INFO] uvicorn.error: [LLM #4] start  in_chars=21538
+2026-05-28 06:48:48,184 [INFO] uvicorn.error: [LLM #5] start  in_chars=18327
+2026-05-28 06:48:58,143 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:48:58,146 [INFO] uvicorn.error: [LLM #5] done in 10.0s  in_tok=4209 out_tok=705
+2026-05-28 06:48:59,666 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:48:59,668 [INFO] uvicorn.error: [LLM #3] done in 11.5s  in_tok=4088 out_tok=931
+2026-05-28 06:49:01,417 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:49:01,419 [INFO] uvicorn.error: [LLM #4] done in 13.2s  in_tok=3732 out_tok=1048
+2026-05-28 06:49:01,420 [INFO] uvicorn.error: [Group B] wall-clock 13.2s
+2026-05-28 06:49:01,420 [INFO] uvicorn.error: Extracted 12 fee entries
+2026-05-28 06:49:01,420 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 06:49:01,420 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 06:49:01,420 [WARNING] uvicorn.error: Removing waterfall step 2 — class 'A-2' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 06:49:01,421 [WARNING] uvicorn.error: Removing waterfall step 3 — class 'A-3' not in deal classes ['A-1', 'A-IO-S', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'M-1', 'M-2', 'M-3', 'X']
+2026-05-28 06:49:01,421 [INFO] uvicorn.error: Extracted waterfall (after class filter): 3 interest, 3 principal, 2 excess steps
+2026-05-28 06:49:01,421 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
+2026-05-28 06:49:01,421 [INFO] uvicorn.error: Validation: re-querying for 1 missing fields
+2026-05-28 06:49:01,422 [INFO] uvicorn.error: [LLM #6] start  in_chars=22756
+2026-05-28 06:49:02,754 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:49:02,756 [INFO] uvicorn.error: [LLM #6] done in 1.3s  in_tok=6019 out_tok=23
+2026-05-28 06:49:02,757 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
+2026-05-28 06:49:02,757 [INFO] uvicorn.error: [LLM #7] start  in_chars=3575
+2026-05-28 06:49:07,018 [INFO] httpx: HTTP Request: POST https://ai-ida-dev-westus.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 06:49:07,020 [INFO] uvicorn.error: [LLM #7] done in 4.3s  in_tok=955 out_tok=227
+2026-05-28 06:49:07,021 [INFO] uvicorn.error: Generated 4 step formulas
+2026-05-28 06:49:07,021 [INFO] uvicorn.error: [92%] Assembling deal configuration
+2026-05-28 06:49:07,021 [INFO] uvicorn.error: [100%] Extraction complete
+2026-05-28 06:49:07,021 [INFO] uvicorn.error: Extraction complete: 11 classes, 12 fees, 3 interest steps, 3 principal steps, confidence=0.85
+2026-05-28 06:49:07,038 [INFO] uvicorn.access: 127.0.0.1:44288 - "POST /api/deals/extract HTTP/1.1" 200
+2026-05-28 06:49:07,361 [INFO] uvicorn.access: 127.0.0.1:44288 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 06:49:07,563 [INFO] uvicorn.access: 127.0.0.1:44288 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 07:03:28,377 [INFO] uvicorn.access: 127.0.0.1:43414 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:03:28,778 [INFO] uvicorn.access: 127.0.0.1:43414 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:12:46,008 [INFO] uvicorn.access: 127.0.0.1:33862 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:12:46,836 [INFO] uvicorn.access: 127.0.0.1:33862 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:12:50,528 [INFO] uvicorn.access: 127.0.0.1:33862 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-28 07:12:51,553 [INFO] uvicorn.access: 127.0.0.1:42686 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 07:13:40,922 [INFO] uvicorn.access: 127.0.0.1:58668 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-28 07:13:49,916 [INFO] uvicorn.access: 127.0.0.1:39660 - "OPTIONS /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 07:13:51,352 [INFO] uvicorn.error: Fetching loantape for TESTH101 / 2023-07-20
+2026-05-28 07:13:52,238 [INFO] uvicorn.error: Fetched 2269 loans for TESTH101 / 2023-07-20
+2026-05-28 07:13:52,240 [INFO] uvicorn.error: Computing waterfall for TESTH101 / 2023-07-20, SOFR=0.0530
+2026-05-28 07:13:52,260 [WARNING] uvicorn.error: Step 1 (A-1 interest): formula 'min(max(0, reserve_target - reserve_balance), available_funds)' returned 0 but rule-based gives 741,342.75. Using rule-based amount.
+2026-05-28 07:13:52,260 [WARNING] uvicorn.error: Step 1 (A-1 principal): formula 'min(max(0, reserve_target - reserve_balance), available_funds)' returned 0 but rule-based gives 126,186,000.00. Using rule-based amount.
+2026-05-28 07:13:52,328 [INFO] uvicorn.error: Waterfall result saved for TESTH101 / 2023-07-20
+2026-05-28 07:13:52,444 [INFO] uvicorn.access: 127.0.0.1:39670 - "POST /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 07:14:16,789 [INFO] uvicorn.access: 127.0.0.1:55168 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 07:14:17,361 [INFO] uvicorn.access: 127.0.0.1:55168 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 07:14:17,575 [INFO] uvicorn.access: 127.0.0.1:55168 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 07:14:18,185 [INFO] uvicorn.access: 127.0.0.1:41204 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 07:14:18,501 [INFO] uvicorn.access: 127.0.0.1:41204 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 07:14:18,788 [INFO] uvicorn.access: 127.0.0.1:41204 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 07:14:23,788 [INFO] uvicorn.access: 127.0.0.1:41204 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 07:14:25,405 [INFO] uvicorn.access: 127.0.0.1:41216 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 07:14:25,967 [INFO] uvicorn.access: 127.0.0.1:41216 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 07:14:26,467 [INFO] uvicorn.access: 127.0.0.1:41216 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 07:14:26,776 [INFO] uvicorn.access: 127.0.0.1:41216 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 07:14:41,521 [INFO] uvicorn.access: 127.0.0.1:55572 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:14:42,017 [INFO] uvicorn.access: 127.0.0.1:55572 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 07:14:42,358 [INFO] uvicorn.access: 127.0.0.1:55582 - "GET /api/reports HTTP/1.1" 200
+2026-05-28 07:14:42,604 [INFO] uvicorn.access: 127.0.0.1:55582 - "GET /api/reports HTTP/1.1" 200
+2026-05-28 07:14:46,328 [INFO] uvicorn.access: 127.0.0.1:55582 - "GET /api/reports/TESTH101/2023-07-20 HTTP/1.1" 200
+2026-05-28 07:14:51,396 [INFO] uvicorn.access: 127.0.0.1:59916 - "GET /api/reports/TESTH101/2023-07-20/download HTTP/1.1" 200
+2026-05-28 08:58:25,394 [INFO] uvicorn.error: Shutting down
+2026-05-28 08:58:25,495 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 08:58:25,495 [INFO] uvicorn.error: Shutting down...
+2026-05-28 08:58:25,496 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 08:58:25,496 [INFO] uvicorn.error: Finished server process [632108]
+2026-05-28 09:04:23,156 [INFO] uvicorn.error: Started server process [759319]
+2026-05-28 09:04:23,156 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:04:23,157 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:04:23,160 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:04:23,160 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:04:23,368 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:04:23,369 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:04:23,476 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:04:23,476 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:04:23,477 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:04:23,478 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:04:24,325 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:04:24,326 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:04:24,326 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:04:24,326 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:04:24,326 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:05:10,970 [INFO] uvicorn.error: [5%] Extracting PDF text and tables via Gemini
+2026-05-28 09:05:13,630 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,630 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,630 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,631 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,630 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,631 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,631 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:05:13,632 [INFO] uvicorn.error: DocAI Layout Parser: tables found on 0/91 pseudo pages
+2026-05-28 09:05:34,132 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:05:34,589 [INFO] uvicorn.error: Finished server process [759319]
+2026-05-28 09:05:35,029 [ERROR] uvicorn.error: Traceback (most recent call last):
   File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/_compat.py", line 60, in asyncio_run
     return loop.run_until_complete(main)
   File "uvloop/loop.pyx", line 1512, in uvloop.loop.Loop.run_until_complete
   File "uvloop/loop.pyx", line 1505, in uvloop.loop.Loop.run_until_complete
   File "uvloop/loop.pyx", line 1379, in uvloop.loop.Loop.run_forever
   File "uvloop/loop.pyx", line 557, in uvloop.loop.Loop._run
-  File "uvloop/loop.pyx", line 476, in uvloop.loop.Loop._on_idle
+  File "uvloop/handles/poll.pyx", line 216, in uvloop.loop.__on_uvpoll_event
   File "uvloop/cbhandles.pyx", line 83, in uvloop.loop.Handle._run
-  File "uvloop/cbhandles.pyx", line 63, in uvloop.loop.Handle._run
-  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/server.py", line 70, in serve
-    with self.capture_signals():
-  File "/usr/lib/python3.10/contextlib.py", line 142, in __exit__
-    next(self.gen)
-  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/server.py", line 331, in capture_signals
-    signal.raise_signal(captured_signal)
+  File "uvloop/cbhandles.pyx", line 66, in uvloop.loop.Handle._run
+  File "uvloop/loop.pyx", line 399, in uvloop.loop.Loop._read_from_self
+  File "uvloop/loop.pyx", line 404, in uvloop.loop.Loop._invoke_signals
+  File "uvloop/loop.pyx", line 379, in uvloop.loop.Loop._ceval_process_signals
 KeyboardInterrupt
 
 During handling of the above exception, another exception occurred:
@@ -367,3 +321,949 @@ Traceback (most recent call last):
     await getter
 asyncio.exceptions.CancelledError
 
+2026-05-28 09:05:35,288 [ERROR] uvicorn.error: Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/_compat.py", line 60, in asyncio_run
+    return loop.run_until_complete(main)
+  File "uvloop/loop.pyx", line 1512, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1505, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1379, in uvloop.loop.Loop.run_forever
+  File "uvloop/loop.pyx", line 557, in uvloop.loop.Loop._run
+  File "uvloop/handles/poll.pyx", line 216, in uvloop.loop.__on_uvpoll_event
+  File "uvloop/cbhandles.pyx", line 83, in uvloop.loop.Handle._run
+  File "uvloop/cbhandles.pyx", line 66, in uvloop.loop.Handle._run
+  File "uvloop/loop.pyx", line 399, in uvloop.loop.Loop._read_from_self
+  File "uvloop/loop.pyx", line 404, in uvloop.loop.Loop._invoke_signals
+  File "uvloop/loop.pyx", line 379, in uvloop.loop.Loop._ceval_process_signals
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/applications.py", line 1139, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 120, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 106, in app
+    response = await f(request)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 430, in app
+    raw_response = await run_endpoint_function(
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/aianalytics/intain_admin_ai/backend/api/deal_extraction.py", line 85, in extract_deal_config
+    deal_config = await extract_deal_config_from_pdf(
+  File "/aianalytics/intain_admin_ai/backend/services/llm_agent.py", line 3042, in extract_deal_config_from_pdf
+    raw_results: List[Dict] = await asyncio.to_thread(extract_pdf, pdf_path)
+  File "/usr/lib/python3.10/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+asyncio.exceptions.CancelledError
+2026-05-28 09:05:36,246 [INFO] uvicorn.access: 127.0.0.1:59968 - "POST /api/deals/extract HTTP/1.1" 500
+2026-05-28 09:08:30,459 [INFO] uvicorn.error: Started server process [763978]
+2026-05-28 09:08:30,460 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:08:30,460 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:08:30,464 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:08:30,464 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:08:30,621 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:08:30,622 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:08:30,778 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:08:30,779 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:08:30,779 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:08:30,780 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:08:31,709 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:08:31,709 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:08:31,710 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:08:31,710 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:08:31,710 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:08:51,739 [INFO] uvicorn.error: [5%] Extracting PDF text and tables via Gemini
+2026-05-28 09:08:54,449 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,450 [WARNING] uvicorn.error: DocAI chunk processing error: cannot import name 'documentai' from 'google.cloud' (unknown location)
+2026-05-28 09:08:54,451 [INFO] uvicorn.error: DocAI Layout Parser: tables found on 0/91 pseudo pages
+2026-05-28 09:09:16,444 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:09:16,933 [INFO] uvicorn.error: Finished server process [763978]
+2026-05-28 09:12:52,374 [INFO] uvicorn.error: Started server process [769097]
+2026-05-28 09:12:52,374 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:12:52,375 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:12:52,379 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:12:52,379 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:12:52,537 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:12:52,537 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:12:52,714 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:12:52,714 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:12:52,715 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:12:52,715 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:12:53,621 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:12:53,621 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:12:53,621 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:12:53,621 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:12:53,621 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:13:46,418 [INFO] uvicorn.error: [5%] Extracting PDF text and tables via Gemini
+2026-05-28 09:15:54,308 [INFO] uvicorn.error: DocAI Layout Parser: tables found on 0/91 pseudo pages
+2026-05-28 09:16:48,124 [INFO] uvicorn.error: PDF extraction complete in 181.7s
+2026-05-28 09:16:48,125 [INFO] uvicorn.error: Total pages extracted: 371
+2026-05-28 09:16:48,125 [INFO] uvicorn.error: [12%] Scanning all pages for key values
+2026-05-28 09:16:48,879 [INFO] uvicorn.error: Regex found servicers: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-28 09:16:48,879 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type']
+2026-05-28 09:16:48,880 [INFO] uvicorn.error: [18%] Identifying best pages per section
+2026-05-28 09:16:48,938 [INFO] uvicorn.error:   certificate_table: top pages = [17, 25, 142, 221, 292]
+2026-05-28 09:16:48,939 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 152, 153, 31, 154]
+2026-05-28 09:16:48,939 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
+2026-05-28 09:16:48,939 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
+2026-05-28 09:16:48,939 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
+2026-05-28 09:16:48,940 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
+2026-05-28 09:16:57,873 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
+2026-05-28 09:16:57,876 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 09:17:33,106 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:17:58,184 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:17:58,186 [INFO] uvicorn.error: [Group A] wall-clock 69.2s
+2026-05-28 09:17:58,186 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex fallback: first_payment_date = 2023-07-20
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex fallback: benchmark = SOFR
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex fallback: interest_day_count = actual/360
+2026-05-28 09:17:58,187 [INFO] uvicorn.error:   Regex servicers applied: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-28 09:17:58,187 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31, servicers=2
+2026-05-28 09:17:58,187 [INFO] uvicorn.error: LLM extracted 12 certificate classes (before override)
+2026-05-28 09:17:58,304 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
+2026-05-28 09:18:12,379 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:18:38,920 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:19:22,399 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:19:22,402 [INFO] uvicorn.error: [Group B] wall-clock 84.1s
+2026-05-28 09:19:22,402 [INFO] uvicorn.error: Extracted 10 fee entries
+2026-05-28 09:19:22,402 [INFO] uvicorn.error: Extracted waterfall (after class filter): 8 interest, 18 principal, 16 excess steps
+2026-05-28 09:19:22,402 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
+2026-05-28 09:19:22,403 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
+2026-05-28 09:19:22,403 [INFO] uvicorn.error: Generated 42 step formulas
+2026-05-28 09:19:22,403 [INFO] uvicorn.error: [92%] Assembling deal configuration
+2026-05-28 09:19:22,403 [INFO] uvicorn.error: [100%] Extraction complete
+2026-05-28 09:19:22,404 [INFO] uvicorn.error: Extraction complete: 12 classes, 10 fees, 8 interest steps, 18 principal steps, confidence=0.85
+2026-05-28 09:19:22,424 [INFO] uvicorn.access: 127.0.0.1:60330 - "POST /api/deals/extract HTTP/1.1" 200
+2026-05-28 09:21:04,217 [INFO] uvicorn.error: Started server process [777132]
+2026-05-28 09:21:04,217 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:21:04,217 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:21:04,221 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:21:04,221 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:21:04,366 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:21:04,367 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:21:04,520 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:21:04,520 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:21:04,522 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:21:04,522 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:21:05,516 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:21:05,516 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:21:05,516 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:21:05,516 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:21:05,516 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:21:16,726 [INFO] uvicorn.error: [5%] Extracting PDF text and tables via Gemini
+2026-05-28 09:23:20,437 [INFO] uvicorn.error: DocAI Layout Parser: tables found on 0/91 pseudo pages
+2026-05-28 09:24:13,774 [INFO] uvicorn.error: PDF extraction complete in 177.0s
+2026-05-28 09:24:13,774 [INFO] uvicorn.error: Total pages extracted: 371
+2026-05-28 09:24:13,775 [INFO] uvicorn.error: [12%] Scanning all pages for key values
+2026-05-28 09:24:14,527 [INFO] uvicorn.error: Regex found servicers: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-28 09:24:14,528 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type']
+2026-05-28 09:24:14,528 [INFO] uvicorn.error: [18%] Identifying best pages per section
+2026-05-28 09:24:14,587 [INFO] uvicorn.error:   certificate_table: top pages = [17, 25, 142, 221, 292]
+2026-05-28 09:24:14,588 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 152, 153, 31, 154]
+2026-05-28 09:24:14,588 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
+2026-05-28 09:24:14,588 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
+2026-05-28 09:24:14,588 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
+2026-05-28 09:24:14,589 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
+2026-05-28 09:24:23,397 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
+2026-05-28 09:24:23,400 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 09:24:40,985 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:25:01,986 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:25:01,988 [INFO] uvicorn.error: [Group A] wall-clock 47.4s
+2026-05-28 09:25:01,989 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex fallback: first_payment_date = 2023-07-20
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex fallback: benchmark = SOFR
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex fallback: interest_day_count = actual/360
+2026-05-28 09:25:01,989 [INFO] uvicorn.error:   Regex servicers applied: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-28 09:25:01,989 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31, servicers=2
+2026-05-28 09:25:01,989 [INFO] uvicorn.error: LLM extracted 12 certificate classes (before override)
+2026-05-28 09:25:02,105 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
+2026-05-28 09:25:20,993 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:25:48,648 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:26:30,377 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:26:30,380 [INFO] uvicorn.error: [Group B] wall-clock 88.3s
+2026-05-28 09:26:30,380 [INFO] uvicorn.error: Extracted 9 fee entries
+2026-05-28 09:26:30,380 [INFO] uvicorn.error: Extracted waterfall (after class filter): 8 interest, 18 principal, 16 excess steps
+2026-05-28 09:26:30,380 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
+2026-05-28 09:26:30,381 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
+2026-05-28 09:26:30,381 [INFO] uvicorn.error: Generated 42 step formulas
+2026-05-28 09:26:30,381 [INFO] uvicorn.error: [92%] Assembling deal configuration
+2026-05-28 09:26:30,381 [INFO] uvicorn.error: [100%] Extraction complete
+2026-05-28 09:26:30,382 [INFO] uvicorn.error: Extraction complete: 12 classes, 9 fees, 8 interest steps, 18 principal steps, confidence=0.85
+2026-05-28 09:26:30,401 [INFO] uvicorn.access: 127.0.0.1:38340 - "POST /api/deals/extract HTTP/1.1" 200
+2026-05-28 09:26:30,708 [INFO] uvicorn.access: 127.0.0.1:38340 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:26:30,940 [INFO] uvicorn.access: 127.0.0.1:38340 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:28:21,463 [INFO] uvicorn.access: 127.0.0.1:33452 - "OPTIONS /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-28 09:28:22,333 [ERROR] uvicorn.error: Unhandled exception: cannot import name 'generate_trigger_expression' from 'services.llm_agent' (/aianalytics/intain_admin_ai/backend/services/llm_agent.py)
+Traceback (most recent call last):
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 120, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 106, in app
+    response = await f(request)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 430, in app
+    raw_response = await run_endpoint_function(
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/aianalytics/intain_admin_ai/backend/api/deal_config.py", line 170, in generate_trigger_expression_endpoint
+    from services.llm_agent import generate_trigger_expression
+ImportError: cannot import name 'generate_trigger_expression' from 'services.llm_agent' (/aianalytics/intain_admin_ai/backend/services/llm_agent.py)
+2026-05-28 09:28:22,334 [INFO] uvicorn.access: 127.0.0.1:33456 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 500
+2026-05-28 09:28:22,335 [ERROR] uvicorn.error: Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/applications.py", line 1139, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 120, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 106, in app
+    response = await f(request)
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 430, in app
+    raw_response = await run_endpoint_function(
+  File "/home/dharshan.raaj/.local/lib/python3.10/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/aianalytics/intain_admin_ai/backend/api/deal_config.py", line 170, in generate_trigger_expression_endpoint
+    from services.llm_agent import generate_trigger_expression
+ImportError: cannot import name 'generate_trigger_expression' from 'services.llm_agent' (/aianalytics/intain_admin_ai/backend/services/llm_agent.py)
+2026-05-28 09:30:52,363 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:30:52,464 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:30:52,464 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:30:52,465 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:30:52,465 [INFO] uvicorn.error: Finished server process [777132]
+2026-05-28 09:30:55,817 [INFO] uvicorn.error: Started server process [786434]
+2026-05-28 09:30:55,818 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:30:55,818 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:30:55,822 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:30:55,822 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:30:55,937 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:30:55,937 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:30:56,058 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:30:56,058 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:30:56,059 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:30:56,060 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:30:56,939 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:30:56,940 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:30:56,940 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:30:56,940 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:30:56,940 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:34:22,641 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:34:22,741 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:34:22,742 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:34:22,742 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:34:22,742 [INFO] uvicorn.error: Finished server process [786434]
+2026-05-28 09:34:26,129 [INFO] uvicorn.error: Started server process [789484]
+2026-05-28 09:34:26,129 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:34:26,129 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:34:26,133 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:34:26,133 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:34:26,300 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:34:26,300 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:34:26,453 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:34:26,453 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:34:26,454 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:34:26,454 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:34:27,510 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:34:27,510 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:34:27,510 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:34:27,511 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:34:27,511 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:37:34,521 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:37:34,622 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:37:34,623 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:37:34,623 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:37:34,623 [INFO] uvicorn.error: Finished server process [789484]
+2026-05-28 09:37:38,238 [INFO] uvicorn.error: Started server process [792894]
+2026-05-28 09:37:38,238 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:37:38,238 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:37:38,242 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:37:38,242 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:37:38,376 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:37:38,376 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:37:38,481 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:37:38,481 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:37:38,481 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:37:38,482 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:37:39,469 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:37:39,469 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:37:39,469 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:37:39,470 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:37:39,470 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:38:10,269 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:38:10,369 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:38:10,370 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:38:10,370 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:38:10,370 [INFO] uvicorn.error: Finished server process [792894]
+2026-05-28 09:38:13,807 [INFO] uvicorn.error: Started server process [793650]
+2026-05-28 09:38:13,807 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:38:13,808 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:38:13,811 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:38:13,812 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:38:13,939 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:38:13,939 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:38:14,092 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:38:14,092 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:38:14,092 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:38:14,093 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:38:15,110 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:38:15,110 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:38:15,111 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:38:15,111 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:38:15,111 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:39:31,994 [INFO] uvicorn.access: 127.0.0.1:44474 - "OPTIONS /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-28 09:39:37,514 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:39:37,524 [INFO] uvicorn.access: 127.0.0.1:44476 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-28 09:39:50,862 [INFO] uvicorn.access: 127.0.0.1:52572 - "OPTIONS /api/deals/review HTTP/1.1" 200
+2026-05-28 09:39:51,922 [INFO] uvicorn.access: 127.0.0.1:52588 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 09:40:12,995 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:40:12,998 [INFO] uvicorn.access: 127.0.0.1:43522 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-28 09:40:27,847 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-28 09:40:27,849 [INFO] uvicorn.access: 127.0.0.1:49708 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-28 09:40:34,288 [INFO] uvicorn.access: 127.0.0.1:35414 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 09:40:46,396 [INFO] uvicorn.access: 127.0.0.1:33324 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-28 09:45:11,883 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:45:11,984 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:45:11,984 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:45:11,987 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:45:11,988 [INFO] uvicorn.error: Finished server process [793650]
+2026-05-28 09:45:15,511 [INFO] uvicorn.error: Started server process [800517]
+2026-05-28 09:45:15,511 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:45:15,512 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:45:15,517 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:45:15,518 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:45:15,673 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:45:15,673 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:45:15,866 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:45:15,867 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:45:15,867 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:45:15,868 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:45:17,639 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:45:17,639 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:45:17,639 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:45:17,639 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:45:17,639 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:46:03,381 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:46:03,481 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:46:03,482 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:46:03,482 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:46:03,482 [INFO] uvicorn.error: Finished server process [800517]
+2026-05-28 09:46:06,855 [INFO] uvicorn.error: Started server process [801559]
+2026-05-28 09:46:06,855 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:46:06,855 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:46:06,859 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:46:06,859 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:46:06,990 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:46:06,991 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:46:07,139 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:46:07,140 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:46:07,140 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:46:07,141 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:46:08,118 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:46:08,119 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:46:08,119 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:46:08,119 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:46:08,119 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:47:14,541 [INFO] uvicorn.error: Shutting down
+2026-05-28 09:47:14,641 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 09:47:14,642 [INFO] uvicorn.error: Shutting down...
+2026-05-28 09:47:14,642 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 09:47:14,642 [INFO] uvicorn.error: Finished server process [801559]
+2026-05-28 09:47:17,910 [INFO] uvicorn.error: Started server process [802779]
+2026-05-28 09:47:17,911 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 09:47:17,911 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 09:47:17,915 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 09:47:17,915 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 09:47:18,077 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 09:47:18,077 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 09:47:18,255 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 09:47:18,255 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 09:47:18,256 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 09:47:18,256 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 09:47:20,106 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 09:47:20,107 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 09:47:20,107 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 09:47:20,107 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 09:47:20,107 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 09:50:20,941 [INFO] uvicorn.access: 127.0.0.1:34744 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 09:50:21,311 [INFO] uvicorn.access: 127.0.0.1:34744 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 09:50:22,684 [INFO] uvicorn.access: 127.0.0.1:34744 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 09:50:24,337 [INFO] uvicorn.access: 127.0.0.1:34752 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 09:50:25,036 [INFO] uvicorn.access: 127.0.0.1:34752 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:50:25,238 [INFO] uvicorn.access: 127.0.0.1:34752 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:50:53,191 [INFO] uvicorn.access: 127.0.0.1:35512 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 09:50:54,054 [INFO] uvicorn.access: 127.0.0.1:35514 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 09:50:54,440 [INFO] uvicorn.access: 127.0.0.1:35514 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 09:50:54,781 [INFO] uvicorn.access: 127.0.0.1:35514 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:50:54,988 [INFO] uvicorn.access: 127.0.0.1:35514 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 09:55:38,011 [INFO] uvicorn.access: 127.0.0.1:46014 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 09:55:38,053 [INFO] uvicorn.access: 127.0.0.1:54774 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 09:55:38,268 [INFO] uvicorn.access: 127.0.0.1:46014 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 09:55:38,484 [INFO] uvicorn.access: 127.0.0.1:54774 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 09:55:39,009 [INFO] uvicorn.access: 127.0.0.1:54774 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 09:55:39,266 [INFO] uvicorn.access: 127.0.0.1:54774 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 09:55:47,712 [INFO] uvicorn.access: 127.0.0.1:54782 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 09:55:48,477 [INFO] uvicorn.access: 127.0.0.1:54776 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-28 09:57:02,090 [INFO] uvicorn.access: 127.0.0.1:45668 - "GET /api/loantape/TESTH101/summary?payment_date=2025-01-21 HTTP/1.1" 200
+2026-05-28 09:57:33,795 [INFO] uvicorn.access: 127.0.0.1:46070 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-28 10:01:35,651 [INFO] uvicorn.access: 127.0.0.1:42906 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:01:36,070 [INFO] uvicorn.access: 127.0.0.1:42906 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:01:36,276 [INFO] uvicorn.access: 127.0.0.1:42906 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:01:36,860 [INFO] uvicorn.access: 127.0.0.1:42912 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:01:37,276 [INFO] uvicorn.access: 127.0.0.1:42912 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:01:37,474 [INFO] uvicorn.access: 127.0.0.1:42912 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:05:38,134 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:05:38,235 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:05:38,235 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:05:38,235 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:05:38,236 [INFO] uvicorn.error: Finished server process [802779]
+2026-05-28 10:05:41,606 [INFO] uvicorn.error: Started server process [819541]
+2026-05-28 10:05:41,606 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:05:41,606 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:05:41,610 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:05:41,610 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:05:41,760 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:05:41,760 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:05:41,909 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:05:41,909 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:05:41,909 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:05:41,910 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:05:43,037 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:05:43,037 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:05:43,037 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:05:43,038 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:05:43,038 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:05:46,048 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:05:46,149 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:05:46,149 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:05:46,150 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:05:46,150 [INFO] uvicorn.error: Finished server process [819541]
+2026-05-28 10:05:49,546 [INFO] uvicorn.error: Started server process [819774]
+2026-05-28 10:05:49,547 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:05:49,547 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:05:49,551 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:05:49,551 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:05:49,683 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:05:49,683 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:05:49,815 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:05:49,815 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:05:49,815 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:05:49,816 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:05:50,803 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:05:50,803 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:05:50,803 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:05:50,803 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:05:50,803 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:05:54,093 [INFO] uvicorn.error: Started server process [819900]
+2026-05-28 10:05:54,093 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:05:54,093 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:05:54,097 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:05:54,097 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:05:54,218 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:05:54,218 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:05:54,276 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:05:54,276 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:05:54,276 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:05:54,277 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:05:55,376 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:05:55,377 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:05:55,377 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:05:55,377 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:05:55,377 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:06:08,725 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:06:08,826 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:06:08,826 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:06:08,827 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:06:08,827 [INFO] uvicorn.error: Finished server process [819900]
+2026-05-28 10:06:12,182 [INFO] uvicorn.error: Started server process [820351]
+2026-05-28 10:06:12,182 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:06:12,182 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:06:12,186 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:06:12,186 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:06:12,309 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:06:12,309 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:06:12,429 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:06:12,429 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:06:12,430 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:06:12,430 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:06:13,333 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:06:13,334 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:06:13,334 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:06:13,334 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:06:13,334 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:06:14,438 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:06:14,538 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:06:14,539 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:06:14,539 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:06:14,539 [INFO] uvicorn.error: Finished server process [820351]
+2026-05-28 10:06:17,989 [INFO] uvicorn.error: Started server process [820477]
+2026-05-28 10:06:17,990 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:06:17,990 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:06:17,994 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:06:17,994 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:06:18,117 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:06:18,117 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:06:18,177 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:06:18,177 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:06:18,177 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:06:18,178 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:06:19,090 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:06:19,090 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:06:19,090 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:06:19,090 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:06:19,091 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:10:13,489 [INFO] uvicorn.access: 127.0.0.1:53858 - "OPTIONS /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:10:14,425 [INFO] uvicorn.access: 127.0.0.1:53874 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:10:14,842 [INFO] uvicorn.access: 127.0.0.1:53874 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:10:15,234 [INFO] uvicorn.access: 127.0.0.1:53874 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:10:15,436 [INFO] uvicorn.access: 127.0.0.1:53874 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:10:49,464 [INFO] uvicorn.access: 127.0.0.1:41120 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 10:10:50,387 [INFO] uvicorn.access: 127.0.0.1:41120 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 10:10:52,824 [INFO] uvicorn.access: 127.0.0.1:41120 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-28 10:10:53,092 [INFO] uvicorn.access: 127.0.0.1:41132 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:10:55,030 [INFO] uvicorn.access: 127.0.0.1:41132 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-28 10:11:16,056 [INFO] uvicorn.access: 127.0.0.1:53754 - "OPTIONS /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 10:11:17,090 [INFO] uvicorn.error: Fetching loantape for TESTH101 / 2023-07-20
+2026-05-28 10:11:18,043 [INFO] uvicorn.error: Fetched 2269 loans for TESTH101 / 2023-07-20
+2026-05-28 10:11:18,062 [INFO] uvicorn.error: Computing waterfall for TESTH101 / 2023-07-20, SOFR=0.0507
+2026-05-28 10:11:18,063 [INFO] uvicorn.error: Using prior-payment accrual days=30 from 2023-06-20 to 2023-07-20
+2026-05-28 10:11:18,159 [INFO] uvicorn.error: Waterfall result saved for TESTH101 / 2023-07-20
+2026-05-28 10:11:18,278 [INFO] uvicorn.access: 127.0.0.1:53764 - "POST /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 10:11:51,552 [INFO] uvicorn.access: 127.0.0.1:50266 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:11:51,904 [INFO] uvicorn.access: 127.0.0.1:50266 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:11:52,516 [INFO] uvicorn.access: 127.0.0.1:50266 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:11:53,169 [INFO] uvicorn.access: 127.0.0.1:50270 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:11:53,517 [INFO] uvicorn.access: 127.0.0.1:50270 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:11:53,720 [INFO] uvicorn.access: 127.0.0.1:50270 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:12:03,607 [INFO] uvicorn.access: 127.0.0.1:52088 - "PUT /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:12:03,819 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:12:04,138 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:12:04,340 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:12:08,602 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 10:12:09,006 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 10:12:12,665 [INFO] uvicorn.access: 127.0.0.1:52088 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-28 10:12:13,475 [INFO] uvicorn.access: 127.0.0.1:58166 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:12:15,025 [INFO] uvicorn.access: 127.0.0.1:58166 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-28 10:12:21,116 [INFO] uvicorn.error: Fetching loantape for TESTH101 / 2023-07-20
+2026-05-28 10:12:21,691 [INFO] uvicorn.error: Fetched 2269 loans for TESTH101 / 2023-07-20
+2026-05-28 10:12:21,709 [INFO] uvicorn.error: Computing waterfall for TESTH101 / 2023-07-20, SOFR=0.0507
+2026-05-28 10:12:21,709 [INFO] uvicorn.error: Using deal-config first-period accrual_days=20 for payment_date=2023-07-20
+2026-05-28 10:12:21,801 [INFO] uvicorn.error: Waterfall result saved for TESTH101 / 2023-07-20
+2026-05-28 10:12:21,921 [INFO] uvicorn.access: 127.0.0.1:48872 - "POST /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 10:21:39,675 [INFO] uvicorn.access: 127.0.0.1:40392 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:21:39,887 [INFO] uvicorn.access: 127.0.0.1:40392 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:21:40,161 [INFO] uvicorn.access: 127.0.0.1:40392 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 10:21:40,614 [INFO] uvicorn.access: 127.0.0.1:40400 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 10:21:40,967 [INFO] uvicorn.access: 127.0.0.1:40400 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:21:41,172 [INFO] uvicorn.access: 127.0.0.1:40400 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 10:39:29,899 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:39:30,003 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:39:30,003 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:39:30,003 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:39:30,003 [INFO] uvicorn.error: Finished server process [820477]
+2026-05-28 10:39:33,205 [INFO] uvicorn.error: Started server process [850813]
+2026-05-28 10:39:33,206 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:39:33,206 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:39:33,210 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:39:33,210 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:39:33,330 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:39:33,331 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:39:33,478 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:39:33,479 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:39:33,479 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:39:33,480 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:39:34,546 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:39:34,546 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:39:34,546 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:39:34,546 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:39:34,547 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:39:38,158 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:39:38,259 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:39:38,260 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:39:38,260 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:39:38,260 [INFO] uvicorn.error: Finished server process [850813]
+2026-05-28 10:39:41,391 [INFO] uvicorn.error: Started server process [851028]
+2026-05-28 10:39:41,391 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:39:41,392 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:39:41,395 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:39:41,395 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:39:41,561 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:39:41,561 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:39:41,620 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:39:41,620 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:39:41,621 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:39:41,621 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:39:42,484 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:39:42,484 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:39:42,484 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:39:42,484 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:39:42,485 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:39:49,914 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:39:50,015 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:39:50,016 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:39:50,016 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:39:50,016 [INFO] uvicorn.error: Finished server process [851028]
+2026-05-28 10:39:53,378 [INFO] uvicorn.error: Started server process [851312]
+2026-05-28 10:39:53,378 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:39:53,379 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:39:53,382 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:39:53,382 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:39:53,538 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:39:53,538 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:39:53,648 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:39:53,648 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:39:53,649 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:39:53,650 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:39:54,515 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:39:54,515 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:39:54,515 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:39:54,516 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:39:54,516 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:40:11,868 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:40:11,969 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:40:11,970 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:40:11,970 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:40:11,970 [INFO] uvicorn.error: Finished server process [851312]
+2026-05-28 10:40:15,319 [INFO] uvicorn.error: Started server process [851735]
+2026-05-28 10:40:15,319 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:40:15,320 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:40:15,323 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:40:15,323 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:40:15,391 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:40:15,392 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:40:15,504 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:40:15,505 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:40:15,505 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:40:15,506 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:40:16,398 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:40:16,398 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:40:16,398 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:40:16,398 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:40:16,398 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:40:18,106 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:40:18,206 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:40:18,207 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:40:18,207 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:40:18,207 [INFO] uvicorn.error: Finished server process [851735]
+2026-05-28 10:40:21,654 [INFO] uvicorn.error: Started server process [851912]
+2026-05-28 10:40:21,654 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:40:21,655 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:40:21,659 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:40:21,659 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:40:21,817 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:40:21,817 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:40:21,933 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:40:21,933 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:40:21,933 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:40:21,934 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:40:22,663 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:40:22,664 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:40:22,664 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:40:22,664 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:40:22,664 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:40:32,093 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:40:32,194 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:40:32,194 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:40:32,194 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:40:32,195 [INFO] uvicorn.error: Finished server process [851912]
+2026-05-28 10:40:35,639 [INFO] uvicorn.error: Started server process [852214]
+2026-05-28 10:40:35,640 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:40:35,640 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:40:35,644 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:40:35,644 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:40:35,763 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:40:35,764 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:40:35,872 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:40:35,872 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:40:35,872 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:40:35,873 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:40:37,660 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:40:37,660 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:40:37,660 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:40:37,660 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:40:37,660 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:41:03,338 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:41:03,439 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:41:03,440 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:41:03,440 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:41:03,440 [INFO] uvicorn.error: Finished server process [852214]
+2026-05-28 10:41:06,760 [INFO] uvicorn.error: Started server process [852819]
+2026-05-28 10:41:06,760 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:41:06,760 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:41:06,764 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:41:06,764 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:41:06,919 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:41:06,919 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:41:07,024 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:41:07,025 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:41:07,025 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:41:07,026 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:41:07,883 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:41:07,883 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:41:07,883 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:41:07,883 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:41:07,884 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:41:10,896 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:41:10,997 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:41:10,997 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:41:10,998 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:41:10,998 [INFO] uvicorn.error: Finished server process [852819]
+2026-05-28 10:41:14,503 [INFO] uvicorn.error: Started server process [853039]
+2026-05-28 10:41:14,503 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:41:14,503 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:41:14,507 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:41:14,507 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:41:14,582 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:41:14,582 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:41:14,657 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:41:14,657 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:41:14,658 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:41:14,659 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:41:15,561 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:41:15,562 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:41:15,562 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:41:15,562 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:41:15,562 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:41:16,166 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:41:16,267 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:41:16,268 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:41:16,268 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:41:16,268 [INFO] uvicorn.error: Finished server process [853039]
+2026-05-28 10:41:19,600 [INFO] uvicorn.error: Started server process [853199]
+2026-05-28 10:41:19,600 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:41:19,601 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:41:19,605 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:41:19,605 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:41:19,728 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:41:19,728 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:41:19,855 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:41:19,855 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:41:19,856 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:41:19,857 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:41:20,588 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:41:20,589 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:41:20,589 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:41:20,589 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:41:20,589 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:41:25,907 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:41:26,008 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:41:26,008 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:41:26,008 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:41:26,009 [INFO] uvicorn.error: Finished server process [853199]
+2026-05-28 10:41:29,391 [INFO] uvicorn.error: Started server process [853448]
+2026-05-28 10:41:29,392 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:41:29,392 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:41:29,396 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:41:29,396 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:41:29,521 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:41:29,522 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:41:29,590 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:41:29,590 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:41:29,591 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:41:29,592 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:41:30,459 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:41:30,459 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:41:30,459 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:41:30,459 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:41:30,460 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:41:31,163 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:41:31,264 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:41:31,265 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:41:31,265 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:41:31,265 [INFO] uvicorn.error: Finished server process [853448]
+2026-05-28 10:41:34,730 [INFO] uvicorn.error: Started server process [853572]
+2026-05-28 10:41:34,730 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:41:34,731 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:41:34,734 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:41:34,734 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:41:34,864 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:41:34,864 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:41:34,923 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:41:34,924 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:41:34,924 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:41:34,925 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:41:35,756 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:41:35,757 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:41:35,757 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:41:35,757 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:41:35,757 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:47:28,695 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:47:28,796 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:47:28,796 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:47:28,797 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:47:28,797 [INFO] uvicorn.error: Finished server process [853572]
+2026-05-28 10:47:32,142 [INFO] uvicorn.error: Started server process [859663]
+2026-05-28 10:47:32,143 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:47:32,143 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:47:32,147 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:47:32,147 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:47:32,281 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:47:32,281 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:47:32,400 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:47:32,400 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:47:32,401 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:47:32,401 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:47:33,376 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:47:33,377 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:47:33,377 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:47:33,377 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:47:33,377 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:47:40,097 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:47:40,198 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:47:40,199 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:47:40,199 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:47:40,199 [INFO] uvicorn.error: Finished server process [859663]
+2026-05-28 10:47:43,618 [INFO] uvicorn.error: Started server process [859950]
+2026-05-28 10:47:43,618 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:47:43,618 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:47:43,622 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:47:43,622 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:47:43,780 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:47:43,780 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:47:43,840 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:47:43,840 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:47:43,841 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:47:43,841 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:47:44,720 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:47:44,720 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:47:44,720 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:47:44,720 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:47:44,721 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 10:48:09,220 [INFO] uvicorn.error: Shutting down
+2026-05-28 10:48:09,321 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 10:48:09,321 [INFO] uvicorn.error: Shutting down...
+2026-05-28 10:48:09,321 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 10:48:09,321 [INFO] uvicorn.error: Finished server process [859950]
+2026-05-28 10:48:12,685 [INFO] uvicorn.error: Started server process [860604]
+2026-05-28 10:48:12,685 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-28 10:48:12,686 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-28 10:48:12,689 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-28 10:48:12,690 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-28 10:48:12,804 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-28 10:48:12,805 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-28 10:48:12,863 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-28 10:48:12,863 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-28 10:48:12,864 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-28 10:48:12,865 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-28 10:48:13,722 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-28 10:48:13,722 [INFO] uvicorn.error: Snowflake connection established
+2026-05-28 10:48:13,722 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-28 10:48:13,722 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-28 10:48:13,723 [INFO] uvicorn.error: Application startup complete.
+2026-05-28 11:46:50,468 [INFO] uvicorn.access: 127.0.0.1:60366 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:46:50,917 [INFO] uvicorn.access: 127.0.0.1:60366 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:46:51,295 [INFO] uvicorn.access: 127.0.0.1:60366 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:46:51,863 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 11:46:52,222 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 11:46:52,426 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 11:46:57,149 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 11:46:57,520 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-28 11:47:02,460 [INFO] uvicorn.access: 127.0.0.1:60374 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-28 11:47:02,852 [INFO] uvicorn.access: 127.0.0.1:35048 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 11:47:06,147 [INFO] uvicorn.access: 127.0.0.1:35048 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-28 11:47:13,002 [INFO] uvicorn.access: 127.0.0.1:60800 - "OPTIONS /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 11:47:14,638 [INFO] uvicorn.error: Fetching loantape for TESTH101 / 2023-07-20
+2026-05-28 11:47:15,002 [INFO] uvicorn.error: Fetched 2269 loans for TESTH101 / 2023-07-20
+2026-05-28 11:47:15,027 [INFO] uvicorn.error: Computing waterfall for TESTH101 / 2023-07-20, SOFR=0.0507
+2026-05-28 11:47:15,028 [INFO] uvicorn.error: Using deal-config first-period accrual_days=20 for payment_date=2023-07-20
+2026-05-28 11:47:15,121 [INFO] uvicorn.error: Waterfall result saved for TESTH101 / 2023-07-20
+2026-05-28 11:47:15,242 [INFO] uvicorn.access: 127.0.0.1:60812 - "POST /api/waterfall/compute HTTP/1.1" 200
+2026-05-28 11:55:51,347 [INFO] uvicorn.access: 127.0.0.1:57916 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:55:51,757 [INFO] uvicorn.access: 127.0.0.1:57916 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:55:52,376 [INFO] uvicorn.access: 127.0.0.1:57916 - "GET /api/deals HTTP/1.1" 200
+2026-05-28 11:55:53,188 [INFO] uvicorn.access: 127.0.0.1:57928 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-28 11:55:53,530 [INFO] uvicorn.access: 127.0.0.1:57928 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 11:55:53,735 [INFO] uvicorn.access: 127.0.0.1:57928 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-28 12:19:43,393 [INFO] uvicorn.error: Shutting down
+2026-05-28 12:19:43,494 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-28 12:19:43,494 [INFO] uvicorn.error: Shutting down...
+2026-05-28 12:19:43,494 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-28 12:19:43,495 [INFO] uvicorn.error: Finished server process [860604]

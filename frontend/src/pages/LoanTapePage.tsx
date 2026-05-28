@@ -15,7 +15,15 @@ const fmt = (v: unknown, dec = 2) =>
   n(v).toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 const fmtUSD = (v: unknown) => {
   const val = n(v);
-  return "$" + (val >= 1_000_000 ? `${(val / 1_000_000).toFixed(2)}M` : fmt(val));
+  // Full currency display (no M/B compact notation), while preserving
+  // meaningful fractional precision from computed values.
+  const raw = String(val);
+  const frac = raw.includes(".") ? raw.split(".")[1].replace(/0+$/, "").length : 0;
+  const maxFrac = Math.min(Math.max(frac, 2), 10);
+  return "$" + val.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maxFrac,
+  });
 };
 const fmtPct = (v: unknown) => `${(n(v) * 100).toFixed(4)}%`;
 
@@ -136,7 +144,7 @@ export default function LoanTapePage() {
         subtitle="Fetch loantape data from Snowflake and run the waterfall computation engine"
       />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         {/* Controls */}
         <div className="card space-y-4">
           <h2 className="section-title">
@@ -271,7 +279,7 @@ export default function LoanTapePage() {
               <Database size={15} className="text-primary-600" />
               Loantape Summary — {selectedDeal} · {selectedDate}
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
               <StatCard label="Total Loans"    value={fmt(summary.loan_count, 0)} />
               <StatCard label="Pool Balance"   value={fmtUSD(totalBal)} accent />
               <StatCard label="WAC"            value={`${(n(rates.wac) * 100).toFixed(4)}%`} />
@@ -279,7 +287,7 @@ export default function LoanTapePage() {
               <StatCard label="60–89 Day DQ"   value={`${(dlq60 * 100).toFixed(2)}%`} />
               <StatCard label="90+ Day DQ"     value={`${(dlq90 * 100).toFixed(2)}%`} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <StatCard label="Interest Collections"  value={fmtUSD(cols.interest)} />
               <StatCard label="Principal Collections" value={fmtUSD(cols.total_principal)} />
               <StatCard label="Curtailments"          value={fmtUSD(cols.curtailments)} />
@@ -323,7 +331,7 @@ export default function LoanTapePage() {
               Waterfall Results — {result.payment_date}
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
               <StatCard label="Pool Balance"         value={fmtUSD(result.current_pool_balance)} accent />
               <StatCard label="Net WAC"              value={fmtPct(result.net_wac)} />
               <StatCard label="Gross Interest"       value={fmtUSD(result.gross_interest_collected)} />
@@ -333,8 +341,8 @@ export default function LoanTapePage() {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200">
-              <nav className="flex gap-6">
+            <div className="border-b border-gray-200 overflow-x-auto">
+              <nav className="flex gap-6 min-w-max">
                 {([
                   { key: "summary",    label: "Payment Summary" },
                   { key: "classes",    label: "Class Details" },

@@ -41,6 +41,7 @@ class ClassPaymentSummary(BaseModel):
     accrual_start: str = ""
     accrual_end: str = ""
     days_accrued: int = 30
+    day_count_method: Optional[str] = None
     beginning_interest_carryforward: float = 0.0
     interest_accrued: float = 0.0          # interest due this period
     total_interest_due: float = 0.0        # carryforward + accrued

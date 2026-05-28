@@ -1,112 +1,992 @@
 """
-LLM Agent for extracting structured deal configuration fields from ABS/MBS deal indentures.
+LLM Agent + Smart PDF Extraction Pipeline for ABS/MBS deal indentures.
 
-Extraction Strategy (multi-pass, high accuracy):
-  1. Extract text AND tables from all PDF pages using pdfplumber.
-  2. Regex pre-scan across ALL pages to find exact values for dates, amounts, rates.
-  3. Smart section scoring to find the BEST pages for each section type.
-  4. Multi-chunk LLM extraction — send the highest-scoring page windows to the LLM.
-  5. Merge and consolidate results, filling gaps with regex-found values.
-  6. Validation pass — re-query LLM for any critical fields still missing.
-  7. Assemble final DealConfig.
+PDF extraction (Pass 1): PyMuPDF + Gemini Vision for scanned/pseudo-table pages.
+Deal mapping (Passes 2+): regex pre-scan, pdfplumber cert table, Azure GPT retrieval.
+
+INSTALL: pip install pymupdf pillow google-genai pandas tabulate pdfplumber
 """
+
 from __future__ import annotations
 
 import asyncio
+import fitz
+import pdfplumber
 import itertools
 import json
 import logging
 import os
 import re
+import threading
 import time
+import pandas as pd
+
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import fitz  # PyMuPDF — ~10x faster than pdfplumber for plain-text extraction
-import pdfplumber
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+from google import genai
 
-from models.deal import (
-    CertificateClass,
-    DealConfig,
-    FeeConfig,
-    ServicerConfig,
-    TriggerTest,
-    WaterfallStep,
-    ReserveAccount,
-)
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+try:
+    from models.deal import (
+        CertificateClass,
+        DealConfig,
+        FeeConfig,
+        ServicerConfig,
+        TriggerTest,
+        WaterfallStep,
+        ReserveAccount,
+    )
+    _MODELS_AVAILABLE = True
+except ImportError:
+    _MODELS_AVAILABLE = False
 
 logger = logging.getLogger("uvicorn.error")
 
-# ---------------------------------------------------------------------------
-# LLM setup
-# ---------------------------------------------------------------------------
+# =====================================================
+# CONFIG
+# =====================================================
 
-def _get_llm(temperature: float = 0.0) -> AzureChatOpenAI:
+PDF_PATH = "/aianalytics/Vishal/Pdf/JPMMT 2023-HE1 - [AS PRINTED] Final Private Placement Memorandum.pdf"
+
+GEMINI_API_KEY = (
+    os.getenv("GEMINI_API_KEY", "").strip()
+    or os.getenv("GOOGLE_API_KEY", "").strip()
+)
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemini-2.5-flash").strip()
+
+OUTPUT_JSON = "/aianalytics/Vishal/Pdf/extracted_output.json"
+
+MAX_WORKERS = 5
+
+GEMINI_MAX_RETRIES = 5
+
+GEMINI_RETRY_SLEEP = 8
+
+# =====================================================
+# GEMINI CLIENT
+# =====================================================
+
+# One client per thread — extract_pdf runs process_page in a ThreadPoolExecutor;
+# creating a new Client per request races the underlying httpx pool and yields
+# "Cannot send a request, as the client has been closed".
+_gemini_client_local = threading.local()
+
+
+def _get_gemini_client() -> genai.Client:
+    if not GEMINI_API_KEY:
+        raise RuntimeError(
+            "GEMINI_API_KEY (or GOOGLE_API_KEY) is not set. "
+            "Add it to .env for PDF vision extraction."
+        )
+    client = getattr(_gemini_client_local, "client", None)
+    if client is None:
+        _gemini_client_local.client = genai.Client(api_key=GEMINI_API_KEY)
+        client = _gemini_client_local.client
+    return client
+
+
+# =====================================================
+# DOCUMENT AI LAYOUT PARSER (Pass-1 pseudo-table replacement)
+# =====================================================
+#
+# Why DocAI instead of Gemini Vision for pseudo-tables:
+#   • Structural detection using bounding-box spatial analysis — no hallucination
+#   • One batch call per 15-page chunk vs one Gemini call per page
+#   • Latency: ~70 pseudo pages → 5 parallel DocAI chunks (~15s) vs ~150s Gemini sequential
+#   • Preserves row/column cell structure as proper markdown tables
+#
+# Credentials: service-account JSON in the same folder as this file.
+# Processor: auto-discovered (or auto-created) at startup.
+# =====================================================
+
+_DOCAI_CREDENTIALS_PATH = Path(__file__).parent / "credentials.json"
+_DOCAI_PROJECT_ID = "burnished-treat-275605"
+_DOCAI_LOCATION = os.getenv("DOCAI_LOCATION", "us")
+# Override via env-var; empty → auto-discover on first use
+_DOCAI_PROCESSOR_ID = os.getenv("DOCAI_PROCESSOR_ID", "").strip()
+# v1.5-2025-08-25 = Gemini-powered RC — visually detects tables (even space-aligned pseudo-tables)
+# v1.0-2024-06-03 = GA stable — only reads text layer, misses pseudo-tables
+_DOCAI_PROCESSOR_VERSION = os.getenv(
+    "DOCAI_PROCESSOR_VERSION",
+    "pretrained-layout-parser-v1.5-2025-08-25",
+)
+# v1.5 online limit = 15 pages per request; use 14 to stay within limit
+_DOCAI_PAGE_CHUNK = 14
+_docai_processor_lock = threading.Lock()
+
+
+def _get_docai_client():
+    """Return a DocumentProcessorServiceClient authenticated via service-account JSON."""
+    from google.cloud import documentai
+    from google.oauth2 import service_account
+
+    creds = service_account.Credentials.from_service_account_file(
+        str(_DOCAI_CREDENTIALS_PATH),
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+    return documentai.DocumentProcessorServiceClient(
+        client_options={"api_endpoint": f"{_DOCAI_LOCATION}-documentai.googleapis.com"},
+        credentials=creds,
+    )
+
+
+def _ensure_docai_processor_id() -> str:
+    """Return the Layout Parser processor ID, discovering or creating it if needed."""
+    global _DOCAI_PROCESSOR_ID
+    if _DOCAI_PROCESSOR_ID:
+        return _DOCAI_PROCESSOR_ID
+    with _docai_processor_lock:
+        if _DOCAI_PROCESSOR_ID:
+            return _DOCAI_PROCESSOR_ID
+        try:
+            from google.cloud import documentai
+            client = _get_docai_client()
+            parent = f"projects/{_DOCAI_PROJECT_ID}/locations/{_DOCAI_LOCATION}"
+            for p in client.list_processors(parent=parent):
+                if "LAYOUT_PARSER" in (p.type_ or ""):
+                    _DOCAI_PROCESSOR_ID = p.name.split("/")[-1]
+                    logger.info(f"DocAI: found existing Layout Parser processor {_DOCAI_PROCESSOR_ID}")
+                    return _DOCAI_PROCESSOR_ID
+            # None found — create one
+            proc = client.create_processor(
+                parent=parent,
+                processor=documentai.Processor(
+                    display_name="intain-admin-layout-parser",
+                    type_="LAYOUT_PARSER_PROCESSOR",
+                ),
+            )
+            _DOCAI_PROCESSOR_ID = proc.name.split("/")[-1]
+            logger.info(f"DocAI: created Layout Parser processor {_DOCAI_PROCESSOR_ID}")
+            return _DOCAI_PROCESSOR_ID
+        except Exception as e:
+            logger.warning(f"DocAI processor discovery failed: {e}")
+            return ""
+
+
+def _docai_tables_to_markdown(page, doc_text: str) -> List[str]:
+    """Convert DocumentAI Page.tables to a list of markdown strings."""
+    results = []
+    for table in page.tables:
+        def _cell_text(text_anchor) -> str:
+            if not text_anchor or not text_anchor.text_segments:
+                return ""
+            return "".join(
+                doc_text[s.start_index:s.end_index]
+                for s in text_anchor.text_segments
+            ).strip().replace("\n", " ")
+
+        header_rows = [
+            [_cell_text(c.layout.text_anchor) for c in row.cells]
+            for row in table.header_rows
+        ]
+        body_rows = [
+            [_cell_text(c.layout.text_anchor) for c in row.cells]
+            for row in table.body_rows
+        ]
+        if not header_rows and not body_rows:
+            continue
+        try:
+            cols = header_rows[0] if header_rows else None
+            df = pd.DataFrame(body_rows, columns=cols)
+            md = df.to_markdown(index=False)
+            if md:
+                results.append(md)
+        except Exception:
+            pass
+    return results
+
+
+def _docai_layout_blocks_to_page_tables(document) -> Dict[int, List[str]]:
+    """
+    Parse document.document_layout.blocks recursively — v1.5 Gemini Layout Parser format.
+    Tables are nested inside text_block.blocks (under section headings), not at the top level.
+    Cell text lives in cell.blocks[0].text_block.text (NOT cell.text).
+    """
+    page_tables: Dict[int, List[str]] = {}
+    layout = getattr(document, "document_layout", None)
+    if not layout:
+        return page_tables
+
+    def _cell_text(cell) -> str:
+        """Extract text from a LayoutTableCell whose content is in cell.blocks[i].text_block.text"""
+        parts = []
+        for blk in getattr(cell, "blocks", []):
+            tb = getattr(blk, "text_block", None)
+            if tb and getattr(tb, "text", ""):
+                parts.append(tb.text.strip().replace("\n", " "))
+        return " ".join(parts)
+
+    def _process(block, inherited_page: Optional[int]) -> None:
+        page_span = getattr(block, "page_span", None)
+        page_num = (getattr(page_span, "page_start", None) if page_span else None) or inherited_page
+
+        table_block = getattr(block, "table_block", None)
+        if table_block and (table_block.header_rows or table_block.body_rows):
+            header_rows = [
+                [_cell_text(c) for c in row.cells]
+                for row in getattr(table_block, "header_rows", [])
+            ]
+            body_rows = [
+                [_cell_text(c) for c in row.cells]
+                for row in getattr(table_block, "body_rows", [])
+            ]
+            if (header_rows or body_rows) and page_num:
+                try:
+                    cols = header_rows[0] if header_rows else None
+                    if cols and body_rows:
+                        n = len(cols)
+                        body_rows = [(r + [""] * n)[:n] for r in body_rows]
+                    df = pd.DataFrame(body_rows, columns=cols)
+                    md = df.to_markdown(index=False)
+                    if md:
+                        page_tables.setdefault(page_num, []).append(md)
+                except Exception:
+                    pass
+
+        text_block = getattr(block, "text_block", None)
+        if text_block:
+            for nested in getattr(text_block, "blocks", []):
+                _process(nested, page_num)
+
+    for block in getattr(layout, "blocks", []):
+        _process(block, None)
+
+    return page_tables
+
+
+def _process_docai_chunk(
+    sub_pdf_bytes: bytes,
+    page_map: Dict[int, int],   # sub-PDF page index (1-based) → orig page number
+) -> Dict[int, List[str]]:
+    """Process one sub-PDF chunk with DocAI. Returns {orig_page_num: [markdown_tables]}.
+
+    Handles both response formats:
+      • v1.0 stable  → document.pages[i].tables  (header_rows/body_rows + text anchors)
+      • v1.5 Gemini  → document.document_layout.blocks  (table_block with direct .text)
+    """
+    try:
+        from google.cloud import documentai
+        proc_id = _ensure_docai_processor_id()
+        if not proc_id:
+            return {}
+        client = _get_docai_client()
+        name = (
+            f"projects/{_DOCAI_PROJECT_ID}/locations/{_DOCAI_LOCATION}"
+            f"/processors/{proc_id}"
+            f"/processorVersions/{_DOCAI_PROCESSOR_VERSION}"
+        )
+        request = documentai.ProcessRequest(
+            name=name,
+            raw_document=documentai.RawDocument(
+                content=sub_pdf_bytes,
+                mime_type="application/pdf",
+            ),
+            # No layout_config needed for v1.0 stable; table detection is on by default.
+            # If using v1.5 Gemini version, add:
+            #   process_options=documentai.ProcessOptions(
+            #       layout_config=documentai.ProcessOptions.LayoutConfig(enable_table_annotation=True)
+            #   )
+        )
+        result = client.process_document(request=request)
+        document = result.document
+        doc_text = document.text
+
+        # --- Path A: v1.5 Gemini — document_layout.blocks (document.pages is EMPTY in v1.5) ---
+        layout_page_tables = _docai_layout_blocks_to_page_tables(document)
+
+        out: Dict[int, List[str]] = {}
+
+        # v1.5: document.pages is empty; map directly from layout_page_tables sub-page → orig
+        if layout_page_tables:
+            for sub_page_num, tables in layout_page_tables.items():
+                orig = page_map.get(sub_page_num)
+                if orig and tables:
+                    out[orig] = tables
+
+        # --- Path B: v1.0 stable — document.pages[i].tables (text anchors) ---
+        for page in document.pages:
+            orig = page_map.get(page.page_number)
+            if orig is None or orig in out:
+                continue
+            tables = _docai_tables_to_markdown(page, doc_text)
+            if tables:
+                out[orig] = tables
+
+        return out
+    except Exception as e:
+        logger.warning(f"DocAI chunk processing error: {e}")
+        return {}
+
+
+def docai_extract_pseudo_pages(
+    doc,                        # fitz.Document (open)
+    pseudo_page_nums: List[int],  # 1-indexed original page numbers
+) -> Dict[int, List[str]]:
+    """
+    Send pseudo-table pages to Document AI Layout Parser (v1.5 Gemini) in 14-page chunks.
+    v1.5 online limit = 15 pages; chunks run in parallel threads.
+    Returns {orig_page_num: [markdown_table_str, ...]} for pages where tables were found.
+    """
+    if not pseudo_page_nums or not _DOCAI_CREDENTIALS_PATH.exists():
+        return {}
+
+    # Build per-chunk sub-PDFs + page maps
+    chunks_data: List[tuple] = []
+    sorted_pages = sorted(pseudo_page_nums)
+    for i in range(0, len(sorted_pages), _DOCAI_PAGE_CHUNK):
+        chunk_pages = sorted_pages[i: i + _DOCAI_PAGE_CHUNK]
+        sub_doc = fitz.open()
+        page_map: Dict[int, int] = {}
+        for sub_idx, orig_num in enumerate(chunk_pages, start=1):
+            sub_doc.insert_pdf(doc, from_page=orig_num - 1, to_page=orig_num - 1)
+            page_map[sub_idx] = orig_num
+        chunks_data.append((sub_doc.tobytes(), page_map))
+
+    result: Dict[int, List[str]] = {}
+    with ThreadPoolExecutor(max_workers=min(len(chunks_data), 8)) as ex:
+        futures = [ex.submit(_process_docai_chunk, b, m) for b, m in chunks_data]
+        for fut in futures:
+            try:
+                result.update(fut.result())
+            except Exception as e:
+                logger.warning(f"DocAI chunk future error: {e}")
+
+    logger.info(
+        f"DocAI Layout Parser: tables found on {len(result)}/{len(pseudo_page_nums)} pseudo pages"
+    )
+    return result
+
+
+# =====================================================
+# AZURE OPENAI — RETRIEVAL LLM (GPT-5.5)
+# =====================================================
+
+def _get_retrieval_llm() -> AzureChatOpenAI:
+    """Returns the high-accuracy LLM used for structured extraction (GPT-5.5).
+    Uses a dedicated endpoint/key separate from the GPT-4.1 chat deployment.
+    """
     return AzureChatOpenAI(
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", "").strip(),
-        api_key=os.getenv("AZURE_OPENAI_API_KEY", "").strip(),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview").strip(),
-        azure_deployment=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME", "gpt-4.1").strip(),
-        temperature=temperature,
+        azure_endpoint=os.getenv("AZURE_OPENAI_RETRIEVAL_ENDPOINT", "").strip(),
+        api_key=os.getenv("AZURE_OPENAI_RETRIEVAL_API_KEY", "").strip(),
+        api_version=os.getenv("AZURE_OPENAI_RETRIEVAL_API_VERSION", "2024-02-15-preview").strip(),
+        azure_deployment=os.getenv("AZURE_OPENAI_RETRIEVAL_DEPLOYMENT_NAME", "gpt-5.5").strip(),
         max_tokens=8192,
     )
 
 
-# ---------------------------------------------------------------------------
-# PDF extraction — text + tables
-# ---------------------------------------------------------------------------
+# =====================================================
+# FAST TEXT EXTRACTION
+# =====================================================
 
-def extract_pdf_pages(pdf_path: str) -> List[Tuple[int, str]]:
-    """
-    Extract text from all PDF pages, with table rows appended for the first
-    50 pages (where the certificate table lives).
+def extract_fast_text(page):
 
-    Two-stage extraction:
-      1. PyMuPDF (fitz) for fast text extraction across ALL pages.
-      2. pdfplumber for table extraction on first 50 pages only — its table
-         detector is more reliable than fitz's for the certificate table.
-    """
-    page_texts: List[str] = []
-    with fitz.open(pdf_path) as doc:
-        for page in doc:
-            page_texts.append(page.get_text("text") or "")
-
-    # Append pdfplumber table rows for the first 50 pages
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            for i in range(min(50, len(pdf.pages))):
-                try:
-                    tables = pdf.pages[i].extract_tables()
-                    if not tables:
-                        continue
-                    extra = []
-                    for table in tables:
-                        for row in table:
-                            if row and any(cell for cell in row if cell):
-                                row_text = " | ".join(str(c or "").strip() for c in row)
-                                if row_text.strip(" |"):
-                                    extra.append(row_text)
-                    if extra:
-                        page_texts[i] = page_texts[i] + "\n" + "\n".join(extra)
-                except Exception:
-                    pass
-    except Exception as e:
-        logger.warning(f"pdfplumber table-extraction pass failed: {e}")
+        return page.get_text("text")
 
-    pages = [(i + 1, t.strip()) for i, t in enumerate(page_texts)]
-    logger.info(f"Extracted text from {len(pages)} pages of {pdf_path}")
-    return pages
+    except Exception:
+        return ""
+
+# =====================================================
+# TABLE QUALITY CHECK
+# =====================================================
+
+def table_quality_good(table_data):
+
+    if not table_data:
+        return False
+
+    total_cells = 0
+    empty_cells = 0
+
+    for row in table_data:
+
+        for cell in row:
+
+            total_cells += 1
+
+            if cell is None or str(cell).strip() == "":
+                empty_cells += 1
+
+    if total_cells == 0:
+        return False
+
+    empty_ratio = empty_cells / total_cells
+
+    # too many empty cells
+    if empty_ratio > 0.4:
+        return False
+
+    # tiny tables
+    if len(table_data) < 2:
+        return False
+
+    return True
+
+# =====================================================
+# PSEUDO TABLE DETECTION
+# =====================================================
+#
+# Two-stage design:
+#
+# 1. compute_page_features(page)
+#    Per-page signals (pseudo flag, dominant column
+#    x-positions, edge-row signals).
+#
+# 2. apply_buffer_continuation(features)
+#    Buffer / neighbour rule that catches tables
+#    spanning multiple pages: a non-pseudo page is
+#    promoted to pseudo if a neighbour is pseudo and
+#    this page's adjacent edge looks like a continuation
+#    of the same column layout.
+# =====================================================
+
+EDGE_SAMPLE_LINES = 5
+COLUMN_OVERLAP_MIN = 2
 
 
-# ---------------------------------------------------------------------------
-# Regex pre-scan — extract critical values directly from text
-# ---------------------------------------------------------------------------
+def _column_signature(words):
+
+    if not words:
+        return Counter()
+
+    x_positions = [
+        round(w[0] / 10) * 10
+        for w in words
+    ]
+
+    return Counter(x_positions)
+
+
+def _looks_tabular(sample_lines):
+
+    if not sample_lines:
+        return False
+
+    short = sum(
+        1 for l in sample_lines
+        if len(l.split()) <= 6
+    )
+
+    numeric = sum(
+        1 for l in sample_lines
+        if re.search(r"\d", l)
+    )
+
+    return (
+        short / len(sample_lines) >= 0.5
+        and numeric >= 1
+    )
+
+
+def compute_page_features(page):
+
+    empty = {
+        "pseudo": False,
+        "columns": set(),
+        "starts_mid_row": False,
+        "ends_mid_row": False,
+        "num_lines": 0,
+    }
+
+    try:
+        text = page.get_text("text")
+        words = page.get_text("words")
+    except Exception:
+        return empty
+
+    lines = [
+        l.strip()
+        for l in text.split("\n")
+        if l.strip()
+    ]
+
+    if not lines or not words:
+        empty["num_lines"] = len(lines)
+        return empty
+
+    # -----------------------------------------
+    # ratios
+    # -----------------------------------------
+
+    short_lines = sum(
+        1 for l in lines
+        if len(l.split()) <= 6
+    )
+
+    short_ratio = short_lines / len(lines)
+
+    numeric_lines = sum(
+        1 for l in lines
+        if re.search(r"\d", l)
+    )
+
+    numeric_ratio = numeric_lines / len(lines)
+
+    spacing_lines = sum(
+        1 for l in lines
+        if "   " in l or "\t" in l
+    )
+
+    spacing_ratio = spacing_lines / len(lines)
+
+    # -----------------------------------------
+    # x-coordinate alignment
+    # -----------------------------------------
+
+    freq = _column_signature(words)
+
+    aligned_columns = {
+        x
+        for x, v in freq.items()
+        if v > 15
+    }
+
+    # -----------------------------------------
+    # single-page pseudo-table heuristic
+    # -----------------------------------------
+
+    pseudo = (
+        len(lines) >= 5
+        and short_ratio > 0.45
+        and (
+            numeric_ratio > 0.20
+            or spacing_ratio > 0.25
+            or len(aligned_columns) >= 3
+        )
+    )
+
+    # -----------------------------------------
+    # edge-row signals for continuation
+    # -----------------------------------------
+
+    top = lines[:EDGE_SAMPLE_LINES]
+    bottom = lines[-EDGE_SAMPLE_LINES:]
+
+    starts_mid_row = (
+        _looks_tabular(top)
+        and len(aligned_columns) >= 2
+    )
+
+    ends_mid_row = (
+        _looks_tabular(bottom)
+        and len(aligned_columns) >= 2
+    )
+
+    return {
+        "pseudo": pseudo,
+        "columns": aligned_columns,
+        "starts_mid_row": starts_mid_row,
+        "ends_mid_row": ends_mid_row,
+        "num_lines": len(lines),
+    }
+
+
+def apply_buffer_continuation(features):
+
+    n = len(features)
+
+    extended = [f["pseudo"] for f in features]
+
+    for i in range(n):
+
+        if features[i]["pseudo"]:
+            continue
+
+        cur_cols = features[i]["columns"]
+
+        # ----- previous neighbour -----
+        if i > 0 and features[i - 1]["pseudo"]:
+
+            overlap = len(
+                cur_cols & features[i - 1]["columns"]
+            )
+
+            if (
+                features[i]["starts_mid_row"]
+                and overlap >= COLUMN_OVERLAP_MIN
+            ):
+                extended[i] = True
+                continue
+
+        # ----- next neighbour -----
+        if i < n - 1 and features[i + 1]["pseudo"]:
+
+            overlap = len(
+                cur_cols & features[i + 1]["columns"]
+            )
+
+            if (
+                features[i]["ends_mid_row"]
+                and overlap >= COLUMN_OVERLAP_MIN
+            ):
+                extended[i] = True
+
+    return extended
+
+# =====================================================
+# REAL TABLE EXTRACTION
+# =====================================================
+
+def extract_tables(page):
+
+    extracted_tables = []
+
+    try:
+
+        tables = page.find_tables()
+
+        # no tables
+        if not tables.tables:
+            return []
+
+        for table in tables.tables:
+
+            try:
+
+                data = table.extract()
+
+                # bad extraction
+                if not table_quality_good(data):
+                    return None
+
+                df = pd.DataFrame(data)
+
+                markdown = df.to_markdown(index=False)
+
+                extracted_tables.append(markdown)
+
+            except Exception:
+
+                return None
+
+        return extracted_tables
+
+    except Exception:
+
+        return []
+
+# =====================================================
+# PAGE PROCESSING
+# =====================================================
+
+def process_page(
+    page_num,
+    page,
+    is_pseudo=False,
+    is_continuation=False,
+    docai_cache: Optional[Dict[int, List[str]]] = None,
+):
+    """
+    Extract content from a single PDF page.
+
+    Pass-1 strategy (in priority order):
+      1. DocAI Layout Parser — if pre-computed tables exist in docai_cache (fast, structured)
+      2. PyMuPDF table extraction — for pages with real PDF grid tables
+      3. PyMuPDF fast-text — for plain-text pages
+      4. Gemini Vision — fallback only when DocAI found no tables on a pseudo/broken page
+    """
+    print(f"PAGE {page_num}")
+
+    result = {
+        "page": page_num,
+        "method": "",
+        "content": ""
+    }
+
+    # -------------------------------------------------
+    # FAST TEXT EXTRACTION (always run — used as prefix)
+    # -------------------------------------------------
+
+    text = extract_fast_text(page)
+
+    # -------------------------------------------------
+    # PSEUDO TABLE / CONTINUATION
+    # Prefer DocAI over Gemini Vision; fall back to Gemini only if DocAI
+    # found no tables on this page.
+    # -------------------------------------------------
+
+    if is_pseudo:
+        docai_tables = (docai_cache or {}).get(page_num, [])
+        if docai_tables:
+            combined = text + "\n\n" + "\n\n".join(docai_tables)
+        else:
+            # DocAI found no structured tables on this page — use fast text only.
+            # (Was: Gemini Vision fallback. Removed; DocAI is the sole visual extractor.)
+            combined = text
+        result["method"] = (
+            "docai_pseudo_table_continuation"
+            if is_continuation
+            else "docai_pseudo_table"
+        )
+        result["content"] = combined
+        return result
+
+    # -------------------------------------------------
+    # REAL TABLE EXTRACTION (PyMuPDF pdfplumber grid)
+    # -------------------------------------------------
+
+    tables = extract_tables(page)
+
+    # -------------------------------------------------
+    # CASE 1 — NO TABLES FOUND
+    # -------------------------------------------------
+
+    if tables == []:
+        result["method"] = "fast_text"
+        result["content"] = text
+        return result
+
+    # -------------------------------------------------
+    # CASE 2 — GOOD TABLE EXTRACTION (PyMuPDF)
+    # -------------------------------------------------
+
+    elif tables is not None:
+        combined = text + "\n\n" + "\n\n".join(tables)
+        result["method"] = "pymupdf_tables"
+        result["content"] = combined
+        return result
+
+    # -------------------------------------------------
+    # CASE 3 — TABLE EXTRACTION FAILED
+    # Try DocAI first; fall back to Gemini only if DocAI has nothing.
+    # -------------------------------------------------
+
+    else:
+        docai_tables = (docai_cache or {}).get(page_num, [])
+        if docai_tables:
+            combined = text + "\n\n" + "\n\n".join(docai_tables)
+            result["method"] = "docai_table"
+            result["content"] = combined
+            return result
+
+        # DocAI found no tables and PyMuPDF failed — use fast text only.
+        result["method"] = "fast_text"
+        result["content"] = text
+        return result
+
+# =====================================================
+# PDF EXTRACTION
+# =====================================================
+
+def extract_pdf(pdf_path: Optional[str] = None):
+
+    _path = pdf_path or PDF_PATH
+    # Derive output JSON path from input so API calls never clobber the dev default
+    _output = (
+        _path.rsplit(".pdf", 1)[0] + "_extracted.json"
+        if pdf_path else OUTPUT_JSON
+    )
+
+    doc = fitz.open(_path)
+
+    # -------------------------------------------------
+    # PASS 1
+    # per-page features (sequential, fitz-safe)
+    # -------------------------------------------------
+
+    print("COMPUTING PAGE FEATURES")
+
+    features = [
+        compute_page_features(doc[i])
+        for i in range(len(doc))
+    ]
+
+    # -------------------------------------------------
+    # PASS 2
+    # buffer rule for cross-page table continuation
+    # -------------------------------------------------
+
+    pseudo_flags = apply_buffer_continuation(features)
+
+    continuation_count = sum(
+        1
+        for i, p in enumerate(pseudo_flags)
+        if p and not features[i]["pseudo"]
+    )
+
+    print(
+        f"PSEUDO PAGES: {sum(pseudo_flags)} "
+        f"(CONTINUATION: {continuation_count})"
+    )
+
+    # -------------------------------------------------
+    # PASS 2.5 — Document AI Layout Parser pre-pass
+    # Send ALL pseudo-table pages to DocAI in one shot
+    # (chunked into 14-page groups, processed in parallel).
+    # This replaces the majority of per-page Gemini Vision calls,
+    # cutting latency by ~80% for pseudo-table heavy documents.
+    # -------------------------------------------------
+
+    pseudo_page_nums = [i + 1 for i, p in enumerate(pseudo_flags) if p]
+    docai_cache: Dict[int, List[str]] = {}
+
+    if pseudo_page_nums and _DOCAI_CREDENTIALS_PATH.exists():
+        try:
+            print(
+                f"DOCAI PRE-PASS: processing {len(pseudo_page_nums)} pseudo pages "
+                f"in {((len(pseudo_page_nums) - 1) // _DOCAI_PAGE_CHUNK) + 1} chunks..."
+            )
+            t_docai = time.time()
+            docai_cache = docai_extract_pseudo_pages(doc, pseudo_page_nums)
+            elapsed = time.time() - t_docai
+            docai_hit = len(docai_cache)
+            docai_miss = len(pseudo_page_nums) - docai_hit
+            print(
+                f"DOCAI PRE-PASS DONE in {elapsed:.1f}s  "
+                f"(tables found: {docai_hit}, no-table pages (fast_text): {docai_miss})"
+            )
+        except Exception as exc:
+            print(f"DOCAI PRE-PASS FAILED ({exc}) — Gemini Vision fallback for all pseudo pages")
+
+    # -------------------------------------------------
+    # PASS 3 — parallel page processing
+    # Workers call process_page(); pseudo-table pages use
+    # docai_cache first, Gemini only when DocAI found nothing.
+    # Non-pseudo pages use PyMuPDF (unchanged).
+    # -------------------------------------------------
+
+    results = []
+
+    with ThreadPoolExecutor(
+        max_workers=max(MAX_WORKERS, 15)  # more workers now pseudo pages no longer bottleneck on Gemini
+    ) as executor:
+
+        futures = []
+
+        for i in range(len(doc)):
+
+            page = doc[i]
+
+            is_pseudo = pseudo_flags[i]
+
+            is_continuation = (
+                is_pseudo
+                and not features[i]["pseudo"]
+            )
+
+            futures.append(
+                executor.submit(
+                    process_page,
+                    i + 1,
+                    page,
+                    is_pseudo,
+                    is_continuation,
+                    docai_cache,    # DocAI pre-computed tables (or {} if DocAI unavailable)
+                )
+            )
+
+        for future in futures:
+
+            try:
+
+                results.append(
+                    future.result()
+                )
+
+            except Exception as e:
+
+                print("ERROR:", e)
+
+    # sort pages
+    results.sort(
+        key=lambda x: x["page"]
+    )
+
+    # save output
+    with open(
+        _output,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            results,
+            f,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    print("\nEXTRACTION COMPLETE")
+
+    return results
+
+# =====================================================
+# LOAD EXTRACTION
+# =====================================================
+
+def load_extraction():
+
+    with open(
+        _output,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        return json.load(f)
+
+# =====================================================
+# MAPPING LOGIC (ported from file.py)
+# =====================================================
+
+# Pass 1: each page uses exactly one extractor (PyMuPDF or DocAI). Labels for GPT 5.5.
+_DOCAI_PASS1_METHOD_PREFIXES = ("docai_",)
+
+_RETRIEVAL_PASS1_FORMAT_SYSTEM = (
+    "Page headers show [pass1: pymupdf_text] or [pass1: docai_table]. "
+    "PyMuPDF = native PDF text (class name and $ amount may be on separate lines). "
+    "DocAI = Document AI Layout Parser — clean structured markdown tables, very accurate. "
+    "Parse BOTH formats; do not skip pages. "
+)
+
+
+def _methods_by_page(raw_results: Optional[List[Dict]]) -> Dict[int, str]:
+    if not raw_results:
+        return {}
+    return {
+        int(r["page"]): str(r.get("method") or "unknown")
+        for r in raw_results
+        if r.get("page") is not None
+    }
+
+
+def _format_extraction_method_label(method: str) -> str:
+    if not method or method == "unknown":
+        return "unknown"
+    if method == "fast_text":
+        return "pymupdf_text"
+    if method == "pymupdf_tables":
+        return "pymupdf_text+tables"
+    if method.startswith("docai_pseudo"):
+        return "docai_pseudo_table"
+    if method.startswith("docai"):
+        return "docai_table"
+    return method
+
+
+def _format_page_for_mapping(page_num: int, content: str, method: str = "") -> str:
+    label = _format_extraction_method_label(method)
+    return f"=== PAGE {page_num} [pass1: {label}] ===\n{content}"
+
+
+def _join_pages_for_mapping(
+    page_nums: List[int],
+    pages: List[Tuple[int, str]],
+    methods: Dict[int, str],
+) -> str:
+    page_dict = {p: t for p, t in pages}
+    parts = []
+    for p in sorted(page_nums):
+        if p in page_dict:
+            parts.append(_format_page_for_mapping(p, page_dict[p], methods.get(p, "")))
+    return "\n\n".join(parts)
+
 
 def regex_prescan(pages: List[Tuple[int, str]]) -> Dict[str, Any]:
     """
@@ -241,119 +1121,6 @@ def regex_prescan(pages: List[Tuple[int, str]]) -> Dict[str, Any]:
     elif re.search(r"[Hh]ome\s+[Ee]quity\s+[Ll]oan", full_text):
         found["asset_type"] = "Home Equity Loan"
 
-    # ---- Class-level regex: extract certificate table rows directly ----
-    #
-    # STRATEGY: first try to isolate the certificate table section, then extract
-    # class rows only from within it. This avoids picking up the same class name
-    # from a different table (e.g., credit-support calculation) that may have a
-    # different dollar amount and cause LLM-overriding errors.
-    #
-    # We fall back to full-document search if the section is not found.
-
-    # Step 1 — isolate the certificate table section from the full text
-    cert_section_text = full_text  # fallback: whole document
-    cert_section_match = re.search(
-        r"(?:THE\s+OFFERED\s+CERTIFICATES?|SUMMARY\s+OF\s+(?:THE\s+)?CERTIFICATES?"
-        r"|INITIAL\s+CLASS\s+PRINCIPAL\s+AMOUNT|APPROXIMATE\s+INITIAL\s+PASS.THROUGH\s+RATE)"
-        r"(.{200,60000}?)"
-        r"(?=THE\s+SERVICERS?|DESCRIPTION\s+OF\s+THE\s+(?:NOTES|CERTIFICATES)"
-        r"|RISK\s+FACTORS|THE\s+MORTGAGE\s+POOL|THE\s+TRUST\s+FUND"
-        r"|SERVICING\s+OF\s+THE\s+MORTGAGE|CREDIT\s+ENHANCEMENT|PRIORITY\s+OF\s+PAYMENTS)",
-        full_text,
-        re.DOTALL | re.IGNORECASE,
-    )
-    if cert_section_match:
-        cert_section_text = cert_section_match.group(0)
-        logger.info(
-            f"Regex anchored to certificate table section "
-            f"({len(cert_section_text)} chars)"
-        )
-
-    # Step 2 — extract class rows from text.
-    #
-    # IMPORTANT: Do NOT rely solely on the cert_section isolation above —
-    # "THE OFFERED CERTIFICATES" can appear as a regulatory disclaimer early in the
-    # document and the lazy regex will latch onto that short false match.
-    # Instead, search the FULL document text (which guarantees we never miss a page)
-    # and use frequency-voting in Step 4 to pick the most reliable value per class.
-    #
-    # Pattern allows optional footnote markers between class name and dollar amount,
-    # e.g. "Class B-1(5) $6,057,000" where (5) is a footnote number.
-    class_row_pattern = re.compile(
-        r"Class\s+([\w\-]+)(?:\(\d+\))?\s+\$([\d,]+(?:\.\d+)?)(?:\(\d+\))?",
-        re.IGNORECASE,
-    )
-    regex_classes_all: Dict[str, List[float]] = {}
-
-    # Search cert_section first (more reliable if found correctly), then full doc
-    for search_text in [cert_section_text, full_text]:
-        for m in class_row_pattern.finditer(search_text):
-            cname = m.group(1).strip()
-            amount = float(m.group(2).replace(",", ""))
-            if amount > 1000:  # filter noise
-                regex_classes_all.setdefault(cname, []).append(amount)
-        if len(regex_classes_all) >= 4:
-            # Found enough classes — no need to search wider
-            break
-
-    # Step 3 — also scan pipe-delimited rows (pdfplumber table output format)
-    #  "Class A-1 | $126,186,000 | 6.81655% | ..."  or
-    #  "A-1 | 46656UAA1 | $126,186,000 | ..."
-    pipe_row_pattern = re.compile(
-        r"(?:^|\n)\s*(?:[Cc]lass\s+)?([\w\-]+)(?:\(\d+\))?\s*\|\s*\$([\d,]+(?:\.\d+)?)(?:\(\d+\))?",
-        re.IGNORECASE | re.MULTILINE,
-    )
-    for m in pipe_row_pattern.finditer(full_text):
-        cname = m.group(1).strip()
-        # Only accept names that look like certificate classes (not generic words)
-        if not re.match(r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$", cname):
-            continue
-        if cname.upper() in {"CLASS", "TYPE", "NOTE", "TRANCHE", "CERTIFICATE"}:
-            continue
-        amount = float(m.group(2).replace(",", ""))
-        if amount > 1000:
-            regex_classes_all.setdefault(cname, []).append(amount)
-
-    # Step 4 — for each class, use the value that appears MOST OFTEN in the
-    # certificate section. If still tied, take the maximum. This defeats the
-    # "one spurious lower value in another table" problem.
-    regex_classes: Dict[str, float] = {}
-    for cname, amounts in regex_classes_all.items():
-        if not amounts:
-            continue
-        # Most-frequent first, break ties by taking largest
-        freq = Counter(amounts)
-        best_val = max(freq.keys(), key=lambda v: (freq[v], v))
-        regex_classes[cname] = best_val
-
-    if regex_classes:
-        found["regex_class_principals"] = regex_classes
-        logger.info(f"Regex found class principals (cert-section anchored): {regex_classes}")
-
-    # ---- Class margins regex ----
-    # "applicable margin for the Class A-1, ... Certificates will be 1.75000 %, 2.50000 %, ..."
-    margin_sentence_m = re.search(
-        r"applicable\s+margin\s+for\s+the\s+Class\s+([\w\-,\s\n]+?)\s+[Cc]ertificates\s+will\s+be\s+([\d.,\s%\n]+)",
-        full_text,
-        re.IGNORECASE | re.DOTALL,
-    )
-    if margin_sentence_m:
-        class_list_raw = re.sub(r"\s+", " ", margin_sentence_m.group(1))
-        margins_raw = margin_sentence_m.group(2)
-        class_names_clean = [
-            re.sub(r"^[Cc]lass\s+", "", c).strip()
-            for c in re.split(r",\s*(?:and\s+)?|(?:\s+and\s+)", class_list_raw)
-            if c.strip()
-        ]
-        margin_vals = re.findall(r"([\d.]+)\s*%", margins_raw)
-        regex_margins: Dict[str, float] = {}
-        for i, cname in enumerate(class_names_clean):
-            cname_clean = re.sub(r"\s+", "", cname).strip()  # remove internal whitespace
-            if i < len(margin_vals):
-                regex_margins[cname_clean] = float(margin_vals[i]) / 100
-        if regex_margins:
-            found["regex_class_margins"] = regex_margins
-            logger.info(f"Regex found class margins: {regex_margins}")
 
     # ---- Page-level date extraction for 2-column PDFs ----
     # Search each page that mentions "CUT-OFF" for a date on the same page
@@ -379,23 +1146,58 @@ def regex_prescan(pages: List[Tuple[int, str]]) -> Dict[str, Any]:
                         logger.info(f"Page-level cut_off_date found on page {page_num}: {parsed}")
                         break
 
-    # ── Step 5: Deterministic margin extraction ────────────────────────────
-    # Parse "The applicable margin for Class A-1, M-1 ... will be 1.75%, 2.50%, ..."
-    margin_map = _extract_class_margins_from_text(full_text)
-    if margin_map:
-        # Strip the _fixed suffix entries (those are IO fixed rates stored separately)
-        float_margins = {k: v for k, v in margin_map.items() if not k.endswith("_fixed")}
-        io_fixed      = {k[:-6]: v for k, v in margin_map.items() if k.endswith("_fixed")}
-        found["regex_class_margins"] = float_margins
-        if io_fixed:
-            found["regex_io_fixed_rates"] = io_fixed
-        logger.info(f"Extracted SOFR margins for: {list(float_margins.keys())}")
+    # ── Step 7: Servicer extraction ───────────────────────────────────────
+    # "XYZ LLC will service HELOCs related to approximately 60.53% of the Mortgage Loans"
+    _svc_company_pat = re.compile(
+        r'(?:^|[\n.])\s*'
+        r'([A-Z][^\n."(]{2,60}?(?:LLC|Inc\.?|Corp\.?|L\.P\.|LLP|FSB|NA|N\.A\.|Bank|Trust))'
+        r'(?:\s+\([^)]{1,30}\))?\s+will\s+service\s+HELOCs?\s+related\s+to\s+approximately\s+([\d.]+)\s*%',
+        re.IGNORECASE | re.MULTILINE,
+    )
+    # "loanDepot will own the mortgage servicing rights for HELOCs related to approximately 39.47%"
+    _svc_rights_pat = re.compile(
+        r'(?:^|[.]\s+)((?:[A-Z][\w]*(?:\.com)?(?:,?\s+[A-Z][\w]*(?:\.com)?){0,4}))\s+'
+        r'will\s+own\s+the\s+mortgage\s+servicing\s+rights\s+for\s+'
+        r'HELOCs?\s+related\s+to\s+approximately\s+([\d.]+)\s*%',
+        re.IGNORECASE | re.MULTILINE,
+    )
+    # Advance obligation: false if the doc says servicer makes no advances
+    _no_advance_pat = re.search(
+        r'neither\s+the\s+(?:related\s+)?servicer\s+nor\s+any\s+other\s+party\s+'
+        r'(?:participating|will\s+be\s+obligated)\s+to\s+make\s+any\s+(?:monthly\s+)?advances',
+        full_text, re.IGNORECASE,
+    )
+    advance_obligation = not bool(_no_advance_pat)
 
-    # ── Step 6: Special rate type detection ───────────────────────────────
-    special_types = _extract_special_rate_types_from_text(full_text)
-    if special_types:
-        found["special_rate_types"] = special_types
-        logger.info(f"Detected special rate types: {list(special_types.keys())}")
+    regex_servicers: List[Dict] = []
+    seen_svc_names: set = set()
+    for m in list(_svc_company_pat.finditer(full_text)) + list(_svc_rights_pat.finditer(full_text)):
+        raw_name = re.sub(r'\s+', ' ', m.group(1)).strip().rstrip(',')
+        pct = float(m.group(2)) / 100
+        norm_name = re.sub(r'\W', '', raw_name).upper()
+        if norm_name in seen_svc_names or len(raw_name) < 3 or len(raw_name) > 80:
+            continue
+        seen_svc_names.add(norm_name)
+        # Fee rate: look for "X% per annum" or "X basis points" near servicer mention
+        window_start = max(0, m.start() - 200)
+        window = full_text[window_start: m.start() + 2000]
+        fee_pct_m = re.search(r'(\d+\.\d+)\s*%\s+per\s+annum', window, re.IGNORECASE)
+        fee_bps_m = re.search(r'(\d+)\s+basis\s+points\s+per\s+annum', window, re.IGNORECASE)
+        if fee_pct_m:
+            fee_rate = float(fee_pct_m.group(1)) / 100
+        elif fee_bps_m:
+            fee_rate = float(fee_bps_m.group(1)) / 10000
+        else:
+            fee_rate = 0.005  # default 50bps for HELOC
+        regex_servicers.append({
+            "servicer_name": raw_name,
+            "servicing_fee_rate": round(fee_rate, 6),
+            "advance_obligation": advance_obligation,
+            "portfolio_pct": round(pct, 4),
+        })
+    if regex_servicers:
+        found["regex_servicers"] = regex_servicers
+        logger.info(f"Regex found servicers: {[s['servicer_name'] for s in regex_servicers]}")
 
     logger.info(f"Regex pre-scan found fields: {[k for k in found if not k.startswith('regex_')]}")
     return found
@@ -1048,6 +1850,9 @@ SECTION_KEYWORDS: Dict[str, List[str]] = {
         "Monthly Excess Cashflow", "On each Distribution Date",
         "Available Distribution Amount", "Available Funds",
         "first, to pay", "second, to pay", "third, to pay",
+        "order of priority", "following order of priority",
+        "Class Principal Amount thereof is reduced to zero",
+        "Class X Distribution Amount", "Cap Carryover Reserve Account",
     ],
     "fees_expenses": [
         "Servicing Fee Rate", "Securities Administrator Fee",
@@ -1111,6 +1916,56 @@ def _build_section_page_map(
     return result
 
 
+def _find_priority_of_payments_pages(
+    pages: List[Tuple[int, str]],
+    max_pages: int = 12,
+) -> List[int]:
+    """
+    Find pages that contain the actual numbered Priority of Distributions section.
+    Many indentures use '(1) to the Class A-1' rather than 'first, to pay'.
+    """
+    ranked: List[Tuple[int, int]] = []
+    for page_num, text in pages:
+        tu = text.upper()
+        has_numbered_steps = bool(re.search(
+            r"\(\d+\)\s+(?:concurrently,\s+)?to\s+(?:the\s+)?(?:Class\s+)?[A-Z]",
+            text,
+            re.IGNORECASE,
+        ))
+        has_prose_steps = bool(re.search(
+            r"(?:first|second|third|fourth|fifth),\s+to\s+(?:pay|the\s+(?:Class|Trustee|Securities))",
+            text,
+            re.IGNORECASE,
+        ))
+        score = 0
+        if has_numbered_steps:
+            score += 8
+        if has_prose_steps:
+            score += 6
+        if "INTEREST REMITTANCE AMOUNT" in tu and "PRINCIPAL REMITTANCE AMOUNT" in tu:
+            score += 3
+        if "PRIORITY OF DISTRIBUTIONS" in tu or "ORDER OF PRIORITY" in tu:
+            score += 2
+        if "MONTHLY EXCESS CASHFLOW" in tu and re.search(r"\(\d+\)\s+to\s+", text):
+            
+            score += 2
+        # Require actual steps — not just mention of keywords
+        if (has_numbered_steps or has_prose_steps) and score >= 6:
+            ranked.append((page_num, score))
+    ranked.sort(key=lambda x: x[1], reverse=True)
+    if not ranked:
+        return []
+    page_dict = {p: t for p, t in pages}
+    chosen: List[int] = []
+    seen: set = set()
+    for pnum, _ in ranked[:3]:
+        for pg in range(pnum - 3, pnum + 4):
+            if pg in page_dict and pg not in seen:
+                seen.add(pg)
+                chosen.append(pg)
+    return sorted(chosen)
+
+
 def get_best_pages_text(
     pages: List[Tuple[int, str]],
     scores: Dict[str, List[Tuple[int, int]]],
@@ -1118,136 +1973,57 @@ def get_best_pages_text(
     window: int = 8,
     max_chars: int = 18000,
     top_n: int = 5,
+    methods_by_page: Optional[Dict[int, str]] = None,
 ) -> str:
     """
     Get combined text of the top-scored pages for a section,
     including a window of surrounding pages for context.
+    Each page header includes Pass-1 extraction method (pymupdf vs gemini).
+    Pages are added in score order (highest-ranked windows first), not lowest page number first.
     """
+    methods_by_page = methods_by_page or {}
     page_dict = {pnum: text for pnum, text in pages}
     top_pages = [p for p, _ in scores.get(section, [])[:top_n]]
     if not top_pages:
         return ""
 
-    # Expand to include surrounding pages
-    page_set: set = set()
-    for p in top_pages:
-        for offset in range(-2, window + 1):
-            pg = p + offset
-            if pg in page_dict:
-                page_set.add(pg)
-
-    # Sort and join
     combined = ""
-    for pnum in sorted(page_set):
-        text = page_dict.get(pnum, "")
-        combined += f"\n\n=== PAGE {pnum} ===\n{text}"
-        if len(combined) >= max_chars:
-            break
+    seen: set = set()
+    for top_p in top_pages:
+        for offset in range(-2, window + 1):
+            pg = top_p + offset
+            if pg not in page_dict or pg in seen:
+                continue
+            seen.add(pg)
+            block = _format_page_for_mapping(
+                pg, page_dict[pg], methods_by_page.get(pg, "")
+            )
+            if len(combined) + len(block) > max_chars:
+                return combined[:max_chars]
+            combined += f"\n\n{block}"
     return combined[:max_chars]
 
 
-# ---------------------------------------------------------------------------
-# LLM call helper with JSON repair
-# ---------------------------------------------------------------------------
+def _build_waterfall_text(
+    pages: List[Tuple[int, str]],
+    scores: Dict[str, List[Tuple[int, int]]],
+    methods: Dict[int, str],
+    max_chars: int = 22000,
+) -> str:
+    """Prefer pages with the numbered Priority of Distributions, then scored windows."""
+    pom_pages = _find_priority_of_payments_pages(pages)
+    if pom_pages:
+        primary = _join_pages_for_mapping(pom_pages, pages, methods)
+    else:
+        primary = ""
+    scored = get_best_pages_text(
+        pages, scores, "priority_of_payments",
+        window=12, max_chars=max_chars, top_n=4, methods_by_page=methods,
+    )
+    if primary and scored:
+        return (primary + "\n\n" + scored)[:max_chars]
+    return (primary or scored)[:max_chars]
 
-# Diagnostic counter for per-call IDs (so parallel calls can be told apart in logs)
-_llm_call_id = itertools.count(1)
-
-
-def _classify_llm_error(exc: BaseException) -> str:
-    """Return 'RATE_LIMIT' / 'TIMEOUT' / 'AUTH' / 'ERROR' based on the exception."""
-    try:
-        import openai  # local import; openai is already a transitive dep
-        if isinstance(exc, openai.RateLimitError):
-            return "RATE_LIMIT"
-        if isinstance(exc, openai.APITimeoutError):
-            return "TIMEOUT"
-        if isinstance(exc, openai.AuthenticationError):
-            return "AUTH"
-    except Exception:
-        pass
-    msg = str(exc).lower()
-    if "429" in msg or "rate limit" in msg or "rate_limit" in msg or "too many requests" in msg:
-        return "RATE_LIMIT"
-    if "timeout" in msg or "timed out" in msg:
-        return "TIMEOUT"
-    return "ERROR"
-
-
-async def _call_llm(
-    llm: AzureChatOpenAI,
-    system_prompt: str,
-    user_content: str,
-    expect_list: bool = False,
-) -> Any:
-    """Call LLM, parse JSON response. Tries to repair truncated JSON."""
-    cid = next(_llm_call_id)
-    t0 = time.perf_counter()
-    logger.info(f"[LLM #{cid}] start  in_chars={len(user_content)}")
-    try:
-        messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_content),
-        ]
-        try:
-            response = await llm.ainvoke(messages)
-        except Exception as call_exc:
-            elapsed = time.perf_counter() - t0
-            kind = _classify_llm_error(call_exc)
-            retry_after = getattr(getattr(call_exc, "response", None), "headers", {})
-            retry_after_val = retry_after.get("retry-after") if hasattr(retry_after, "get") else None
-            logger.warning(
-                f"[LLM #{cid}] {kind} after {elapsed:.1f}s  "
-                f"retry_after={retry_after_val}  {type(call_exc).__name__}: {str(call_exc)[:200]}"
-            )
-            raise
-
-        elapsed = time.perf_counter() - t0
-        usage = getattr(response, "usage_metadata", None) or {}
-        in_tok = usage.get("input_tokens", "?")
-        out_tok = usage.get("output_tokens", "?")
-        logger.info(f"[LLM #{cid}] done in {elapsed:.1f}s  in_tok={in_tok} out_tok={out_tok}")
-
-        content = response.content.strip()
-
-        # Strip markdown code blocks
-        json_match = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", content, re.DOTALL)
-        if json_match:
-            content = json_match.group(1).strip()
-
-        # Try direct parse
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            pass
-
-        # Try to find JSON object/array in the response
-        for pattern in (r'(\{[\s\S]+\})', r'(\[[\s\S]+\])'):
-            m = re.search(pattern, content)
-            if m:
-                try:
-                    return json.loads(m.group(1))
-                except json.JSONDecodeError:
-                    pass
-
-        # Last resort: fix truncated JSON by appending closing brackets
-        for suffix in ("]}", "}]", "}", "]"):
-            try:
-                return json.loads(content + suffix)
-            except Exception:
-                pass
-
-        logger.warning(f"[LLM #{cid}] Could not parse response as JSON. Preview: {content[:300]}")
-        return [] if expect_list else {}
-    except Exception as e:
-        elapsed = time.perf_counter() - t0
-        logger.error(f"[LLM #{cid}] failed after {elapsed:.1f}s: {e}")
-        return [] if expect_list else {}
-
-
-# ---------------------------------------------------------------------------
-# Extraction prompts (greatly improved)
-# ---------------------------------------------------------------------------
 
 DEAL_INFO_PROMPT = """You are an expert ABS/MBS structured finance analyst. Your job is to extract specific deal configuration fields from an offering document.
 
@@ -1291,8 +2067,16 @@ Extract these fields:
 HINTS for finding values:
 - Cut-off Date / Closing Date: Usually in first 30 pages, near the title page or summary table
 - Original Pool Balance: Look for "aggregate... principal balance" or "initial pool balance" followed by a dollar amount
-- Servicer fee rates: Usually expressed as "X basis points per annum" — convert to decimal (25bps = 0.0025)
 - Cleanup call: Usually "Optional Redemption" or "Cleanup Call" at 10% of original balance
+- Servicers: Look for "THE SERVICERS" section or a fee schedule table. Each servicer entry needs:
+    servicer_name   — the company name e.g. "Specialized Loan Servicing LLC" or "loanDepot"
+    servicing_fee_rate — convert to decimal: "0.50000% per annum" → 0.005; "25 basis points" → 0.0025
+    advance_obligation — false if the document says "neither the servicer... will be obligated to make any monthly advances"
+    portfolio_pct — the fraction of loans they service, e.g. "60.53% of the Mortgage Loans" → 0.6053
+  TESTH101 example: SLS services ~60.53%, loanDepot ~39.47%, both at 0.50000% per annum (= 0.005)
+
+Page headers show [pass1: pymupdf_text] or [pass1: gemini_vision_*] — same deal, two layouts.
+PyMuPDF: line-broken class rows; Gemini: markdown tables. Extract from both.
 
 Document text (multiple pages):
 {text}
@@ -1316,14 +2100,33 @@ ANTI-HALLUCINATION RULES  (read these first)
    initial_principal = 0 and the appropriate flag.
 5. Return null for any field you cannot find — do not guess.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TWO PASS-1 EXTRACTION FORMATS (you will see both)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Each page header shows [pass1: ...] — that page used ONE extractor only:
+
+FORMAT A — pymupdf_text / pymupdf_text+tables
+  Native PDF text. Rows may be line-broken:
+    Class A-1
+     $126,186,000
+  Or inline: Class A-1  $126,186,000  6.81655%  Senior/Floater ...
+
+FORMAT B — docai_pseudo_table / docai_table
+  Document AI Layout Parser: clean structured markdown tables (most accurate).
+  | Class | Initial Principal | Pass-Through Rate | Type | ... |
+  | A-1   | $126,186,000      | 6.81655%          | ...  | ... |
+
+Do NOT skip a page because the format differs. Extract from BOTH.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HOW TO FIND THE TABLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Look for a section headed "THE OFFERED CERTIFICATES", "SUMMARY OF THE CERTIFICATES",
-or "INITIAL CLASS PRINCIPAL AMOUNT".  The table rows will look like:
-  Class A-1  $126,186,000  6.81655%  Senior/Floater/Pro Rata  AAA(sf)  AAA(sf)  46656UAA1
-or (pipe-delimited from PDF table extraction):
-  A-1 | 46656UAA1 | $126,186,000 | 6.81655% | Senior/Floater | AAA(sf) | AAA(sf)
+Look for "THE OFFERED CERTIFICATES", "SUMMARY OF THE CERTIFICATES",
+or "INITIAL CLASS PRINCIPAL AMOUNT". Examples:
+
+PyMuPDF: Class A-1  $126,186,000  6.81655%  ...  OR  Class A-1\\n $126,186,000
+DocAI:   | A-1 | $126,186,000 | 6.81655% | Senior | ...  (clean structured table)
+Gemini:  | Class A-1 | $126,186,000 | 6.81655% | Senior | ...
 
 Return a JSON ARRAY.  Each object:
 {
@@ -1396,29 +2199,36 @@ Return a JSON ARRAY:
 [
   {
     "fee_name": "Servicing Fee",
-    "fee_type": "percentage",
-    "fee_rate": 0.0025,
-    "fixed_amount": null,
-    "priority": 1,
-    "fee_cap": null,
-    "applies_to": "pool_balance",
-    "servicer_name": "Servicer Name or null"
+    "fee_type": "percentage",       // "percentage" | "fixed"
+    "fee_rate": 0.0025,             // annual decimal rate — null if fixed-dollar
+    "fixed_amount": null,           // annual dollar amount — null if percentage
+    "priority": 1,                  // 1=highest priority (servicing fee), increment for each subsequent fee
+    "fee_cap": null,                // annual cap in dollars — null if none
+    "applies_to": "pool_balance",   // "pool_balance" | "class_balance" | "issuing_entity"
+    "servicer_name": null,          // servicer name if servicer-specific, else null
+    "category": "fee",              // "fee" for regular ongoing fees | "expense" for capped/irregular trust expenses
+    "payee": "Servicer Name"        // who receives the payment
   }
 ]
 
-COMMON FEES TO LOOK FOR:
-- Servicing Fee (usually 25bps or 0.25% per annum on pool balance)
-- Backup Servicing Fee
-- Securities Administrator Fee / SA Fee (often 1-3bps)
-- Owner Trustee / Indenture Trustee Fee
-- Custodian Fee
-- Loan Data Agent Fee
-- Rating Agency Fee (if recurring)
-- Annual Expense Cap (if stated — add as fixed fee)
+CATEGORY RULES — this is important:
+- category = "fee"     : recurring fees paid BEFORE the waterfall (servicing fee, SA fee, trustee fee, custodian fee)
+- category = "expense" : trust expenses subject to the Annual Expense Cap ($250,000 or stated cap)
 
-CONVERSION: "X basis points" = X/10000 as decimal rate. "X bps" = X/10000.
-For fixed fees, express as annual dollar amount.
-Priority 1 = paid first (usually servicing fee), higher numbers = lower priority.
+COMMON FEES TO LOOK FOR (with typical rates):
+- Servicing Fee: 0.25%–0.50% per annum on pool balance (category: "fee")
+- Securities Administrator / SA Fee: 0.01%–0.03% per annum (category: "fee")
+- Owner Trustee / Indenture Trustee Fee: fixed dollar amount per year or 0.01% (category: "fee")
+- Custodian Fee: fixed dollar amount (e.g. $12 per loan per year) or 0.01% (category: "fee")
+- Participation Owner Trustee / Participation Registrar Fee: fixed or bps (category: "fee")
+- Loan Data Agent Fee: fixed or bps (category: "fee")
+- Rating Agency Fee: fixed annual amount if recurring (category: "expense")
+- Trust Expenses / Issuing Entity Expenses: capped at Annual Expense Cap (category: "expense")
+- Annual Expense Cap: record as a separate expense entry with fixed_amount = the cap dollar amount
+
+CONVERSION: "X basis points" = X/10000. "X bps" = X/10000. "$250,000 per year" → fixed_amount=250000.
+For fees stated as "$X per loan": multiply by estimated loan count, or use the exact dollar amount if stated.
+Priority 1 = paid first; increment sequentially.
 
 Document text:
 {text}
@@ -1441,7 +2251,7 @@ Return a JSON object with THREE arrays:
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
       "condition": "always",
-      "concurrent_with": null
+      "concurrent_with": ["M-1", "M-2"]
     }
   ],
   "principal_waterfall": [ ...same format... ],
@@ -1449,7 +2259,7 @@ Return a JSON object with THREE arrays:
 }
 
 EXTRACTION RULES:
-1. Follow the numbered list in the document exactly — each "first", "second", "third" etc. is a step
+1. Follow the numbered list — each "(1)", "(2)", "first", "second" etc. is a step
 2. interest_waterfall: from Interest Remittance Amount → pay interest to each class in order
 3. principal_waterfall: from Principal Remittance Amount → pay principal to each class
 4. excess_cashflow_waterfall: the "Monthly Excess Cashflow" distribution steps
@@ -1457,6 +2267,11 @@ EXTRACTION RULES:
 payment_type values: "interest", "principal", "reserve", "excess", "fee", "loss_reimbursement"
 source_bucket values: "interest_remittance", "principal_remittance", "excess_cashflow", "available_funds"
 condition values: "always", "trigger_failure", "trigger_pass", null
+
+CRITICAL — concurrent_with MUST be a JSON ARRAY, never a string:
+  CORRECT: "concurrent_with": ["M-1", "M-2", "M-3"]
+  WRONG:   "concurrent_with": "M-1, M-2, M-3"
+  If not concurrent: "concurrent_with": null
 
 For each step include the exact class name it applies to (e.g., "A-1", "M-1", "B-5").
 If a step says "Class A-1, A-2, and A-3" — create separate steps for each class.
@@ -1475,25 +2290,12 @@ Return JSON:
   "loss_allocation_order": ["B-5", "B-4", "B-3", "B-2", "B-1", "M-2", "M-1"],
   "triggers": [
     {
-      "test_name": "Credit Support Depletion Event",
+      "test_name": "Credit Enhancement Test",
       "test_type": "ce",
-      "description": "Trigger fires when aggregate subordinate balance reaches zero",
-      "trigger_condition": "subordinate_balance == 0",
-      "trigger_action": "CREDIT_SUPPORT_DEPLETION"
-    },
-    {
-      "test_name": "Cumulative Loss Trigger",
-      "test_type": "oc",
-      "description": "Cumulative realized losses exceed 5% of original certificate balance",
-      "trigger_condition": "cumulative_loss_pct > 0.05",
-      "trigger_action": "CUMULATIVE_LOSS_TRIGGER"
-    },
-    {
-      "test_name": "Delinquency Trigger",
-      "test_type": "delinquency",
-      "description": "6-month rolling 60+ DPD rate exceeds 5%",
-      "trigger_condition": "delinquency_60plus_pct > 0.05",
-      "trigger_action": "DELINQUENCY_TRIGGER"
+      "description": "CE must be >= threshold",
+      "threshold": 0.05,
+      "operator": "greater_than",
+      "trigger_on_failure": "Sequential principal distribution to seniors"
     }
   ],
   "reserve_accounts": [
@@ -1509,19 +2311,7 @@ Return JSON:
 
 LOSS ALLOCATION: Most subordinate class absorbs losses first (usually B-5 or lowest rated).
 TEST TYPES: "oc" (overcollateralization), "ce" (credit enhancement), "delinquency", "cleanup_call", "other"
-
-TRIGGER CONDITION — write as a Python boolean expression using ONLY these variables:
-  subordinate_balance  : aggregate M-1..B-4 beginning balance (dollars)
-  cumulative_loss_pct  : cumulative realized losses / original cert balance (decimal, e.g. 0.05)
-  cumulative_losses    : cumulative realized losses in dollars
-  delinquency_60plus_pct : 6-month rolling avg 60+ DPD / pool balance (decimal)
-  pool_balance         : current pool beginning balance (dollars)
-
-TRIGGER ACTION — use one of these known flag names (exact uppercase):
-  CREDIT_SUPPORT_DEPLETION  : for credit support / subordinate depletion triggers
-  CUMULATIVE_LOSS_TRIGGER   : for cumulative loss / OC tests
-  DELINQUENCY_TRIGGER       : for delinquency / 60+ DPD tests
-  For any other trigger type, invent a SHORT_UPPERCASE_NAME.
+THRESHOLD: Express as decimal (5% = 0.05).
 
 Document text:
 {text}
@@ -1545,11 +2335,6 @@ WHAT TO LOOK FOR:
 Document text:
 {text}
 """
-
-
-# ---------------------------------------------------------------------------
-# Safe type helpers
-# ---------------------------------------------------------------------------
 
 def _safe_float(val: Any) -> Optional[float]:
     if val is None:
@@ -1602,15 +2387,41 @@ def _build_fee_config(raw: Dict) -> Optional[FeeConfig]:
         fee_name = str(raw.get("fee_name", "")).strip()
         if not fee_name:
             return None
+        # Infer fee_type when the model omits it
+        fee_rate = _safe_float(raw.get("fee_rate"))
+        fixed_amount = _safe_float(raw.get("fixed_amount"))
+        raw_type = raw.get("fee_type")
+        if raw_type in ("percentage", "fixed"):
+            fee_type = raw_type
+        elif fee_rate is not None:
+            fee_type = "percentage"
+        elif fixed_amount is not None:
+            fee_type = "fixed"
+        else:
+            fee_type = "percentage"
+
+        # Infer category: known expense keywords → "expense"
+        _EXPENSE_KEYWORDS = (
+            "trust expense", "issuing entity expense", "indemnif",
+            "rating agency", "annual expense cap",
+        )
+        raw_cat = str(raw.get("category") or "fee").lower()
+        if raw_cat == "expense" or any(kw in fee_name.lower() for kw in _EXPENSE_KEYWORDS):
+            category = "expense"
+        else:
+            category = "fee"
+
         return FeeConfig(
             fee_name=fee_name,
-            fee_rate=_safe_float(raw.get("fee_rate")),
-            fixed_amount=_safe_float(raw.get("fixed_amount")),
-            fee_type=str(raw.get("fee_type", "percentage")),
+            fee_rate=fee_rate,
+            fixed_amount=fixed_amount,
+            fee_type=fee_type,
             priority=int(raw.get("priority") or 1),
             fee_cap=_safe_float(raw.get("fee_cap")),
             applies_to=str(raw.get("applies_to", "pool_balance")),
             servicer_name=raw.get("servicer_name"),
+            category=category,
+            payee=raw.get("payee"),
         )
     except Exception as e:
         logger.warning(f"Could not build FeeConfig from {raw}: {e}")
@@ -1619,6 +2430,10 @@ def _build_fee_config(raw: Dict) -> Optional[FeeConfig]:
 
 def _build_waterfall_step(raw: Dict) -> Optional[WaterfallStep]:
     try:
+        cw = raw.get("concurrent_with")
+        # GPT sometimes returns a comma string instead of a list; normalise here
+        if isinstance(cw, str):
+            cw = [s.strip() for s in cw.split(",") if s.strip()] or None
         return WaterfallStep(
             step=int(raw.get("step") or 0),
             description=str(raw.get("description", "")),
@@ -1627,7 +2442,7 @@ def _build_waterfall_step(raw: Dict) -> Optional[WaterfallStep]:
             source_bucket=str(raw.get("source_bucket", "available_funds")),
             condition=raw.get("condition"),
             amount_formula=raw.get("amount_formula"),
-            concurrent_with=raw.get("concurrent_with"),
+            concurrent_with=cw,
             reserve_account=raw.get("reserve_account"),
         )
     except Exception as e:
@@ -1670,6 +2485,15 @@ def _reconcile_classes_with_regex(
         cname = str(raw_cls.get("class_name", "")).strip()
         norm = _normalize_class_name(cname)
         if norm in authoritative_norms:
+            reconciled.append(raw_cls)
+        elif (
+            raw_cls.get("is_residual")
+            or raw_cls.get("is_notional")
+            or raw_cls.get("is_exchangeable")
+            or str(raw_cls.get("interest_rate_type", "")).lower() in ("residual", "excess_cashflow", "exchangeable")
+        ):
+            # Residual / notional / exchangeable classes never have a dollar principal
+            # in the PDF so regex won't find them — always keep them.
             reconciled.append(raw_cls)
         else:
             removed.append(cname)
@@ -1724,160 +2548,480 @@ def _filter_waterfall_steps_by_classes(
 # Formula generation — convert text steps to evaluatable math expressions
 # ---------------------------------------------------------------------------
 
-FORMULA_GENERATION_PROMPT = """You are an expert ABS/MBS structured finance engineer.
-
-Convert each waterfall step description into a Python math expression that calculates
-the AMOUNT to be paid at that step.
-
-Use ONLY these pre-defined variables (do not invent new names):
-  available_funds       — float: funds remaining before this step
-  interest_due          — dict: interest_due.get("CLASS", 0)   — interest owed to a class
-  balances              — dict: balances.get("CLASS", 0)        — beginning principal balance
-  cap_carryover         — dict: cap_carryover.get("CLASS", 0)  — cap carryover owed to a class
-  fee_amounts           — dict: fee_amounts.get("FEE_NAME", 0) — fee amount due
-  reserve_balance       — float: current reserve account balance
-  reserve_target        — float: target reserve account balance
-  realized_loss         — float: total realized losses this period
-  total_interest_due    — float: sum of all class interest due
-
-STRICT RULES — follow exactly:
-1. If payment_type == "interest" and class_name is set → ALWAYS use:
-     min(interest_due.get("CLASS_NAME", 0), available_funds)
-2. If payment_type == "principal" and class_name is set → ALWAYS use:
-     min(balances.get("CLASS_NAME", 0), available_funds)
-3. If the step is a reserve/OC account fill (no class, payment_type="reserve") → use:
-     min(max(0, reserve_target - reserve_balance), available_funds)
-4. For realized-loss reimbursement → min(realized_loss, available_funds)
-5. For fee steps → min(fee_amounts.get("FEE_NAME", 0), available_funds)
-6. For excess/residual pass-through → available_funds
-
-CRITICAL: NEVER apply a reserve formula to a class interest or principal payment step.
-If the description says "Pay the Class X-1 Interest Distribution Amount",
-the formula MUST be: min(interest_due.get("X-1", 0), available_funds)
-
-Given these waterfall steps:
-{steps_json}
-
-Return a JSON array — one object per step — with ONLY these fields:
-[
-  {{"step": <step_number>, "amount_formula": "<python expression>"}},
-  ...
-]
-
-IMPORTANT:
-- Use the exact class names from the step (e.g., "A-1", "M-1")
-- Use min(..., available_funds) for every step except pure excess/residual pass-through
-- Do NOT add imports, assignments, or multi-line code
-- Keep each formula as a single Python expression
-"""
-
-
-async def _generate_step_formulas(
-    llm: AzureChatOpenAI,
-    all_steps: List[Dict],
-) -> Dict[int, str]:
+def _deterministic_formula(step: Dict) -> str:
     """
-    Call LLM to generate a math formula for each waterfall step.
-    Returns {step_number: formula_string}.
+    Derive a Python formula expression for a waterfall step purely from its
+    structured fields — no LLM involved.
+
+    Rules (applied in order):
+      1. interest step with class  → min(interest_due.get("CLS", 0), available_funds)
+      2. principal step with class → min(balances.get("CLS", 0), available_funds)
+      3. reserve/OC fill           → min(max(0, reserve_target - reserve_balance), available_funds)
+      4. fee step                  → min(fee_amounts.get("FEE", 0), available_funds)
+      5. realized-loss language    → min(realized_loss, available_funds)
+      6. excess / residual         → available_funds
     """
-    if not all_steps:
-        return {}
-    try:
-        steps_json = json.dumps(
-            [{"step": s.get("step"), "description": s.get("description"),
-              "class_name": s.get("class_name"), "payment_type": s.get("payment_type")}
-             for s in all_steps],
-            indent=2,
-        )
-        result = await _call_llm(
-            llm,
-            "You are an ABS/MBS engineer. Return ONLY a JSON array of {step, amount_formula} objects.",
-            FORMULA_GENERATION_PROMPT.replace("{steps_json}", steps_json),
-            expect_list=True,
-        )
-        if not isinstance(result, list):
-            return {}
-        # Build a lookup for payment_type and class_name by step number
-        step_meta = {
-            s.get("step"): {"ptype": s.get("payment_type", ""), "cname": s.get("class_name", "")}
-            for s in all_steps
-        }
+    ptype = (step.get("payment_type") or "").lower()
+    cname = (step.get("class_name") or "").strip()
+    desc  = (step.get("description") or "").lower()
+    fee   = (step.get("fee_name") or "").strip()
 
-        formula_map: Dict[int, str] = {}
-        for item in result:
-            step_num = item.get("step")
-            formula = str(item.get("amount_formula", "")).strip()
-            if step_num is None or not formula:
-                continue
-            # Safety check — no dangerous keywords
-            if any(kw in formula for kw in ("import", "exec", "eval", "open", "os.", "sys.", ";")):
-                logger.warning(f"Rejected unsafe formula for step {step_num}: {formula}")
-                continue
+    if ptype == "interest" and cname:
+        return f'min(interest_due.get("{cname}", 0), available_funds)'
 
-            # ── Validate formula against payment_type ────────────────────────
-            # If LLM generated a reserve-fill formula for a class payment step,
-            # replace it with the correct class-based formula.
-            meta = step_meta.get(step_num, {})
-            ptype = meta.get("ptype", "").lower()
-            cname = meta.get("cname", "")
-            is_reserve_formula = "reserve_target" in formula or "reserve_balance" in formula
+    if ptype == "principal" and cname:
+        return f'min(balances.get("{cname}", 0), available_funds)'
 
-            is_balance_formula = "balances.get" in formula and "interest_due" not in formula
+    if ptype == "reserve" or (
+        not cname and ("reserve" in desc or "oc account" in desc or "overcollateral" in desc)
+    ):
+        return 'min(max(0, reserve_target - reserve_balance), available_funds)'
 
-            if cname and ptype == "interest" and is_reserve_formula:
-                corrected = f'min(interest_due.get("{cname}", 0), available_funds)'
-                logger.warning(
-                    f"Step {step_num} ({cname} interest): LLM generated reserve formula "
-                    f"'{formula}' — replaced with '{corrected}'"
-                )
-                formula = corrected
+    if ptype == "fee":
+        key = fee if fee else (cname if cname else "fee")
+        return f'min(fee_amounts.get("{key}", 0), available_funds)'
 
-            elif cname and ptype == "interest" and is_balance_formula:
-                # Used balances.get instead of interest_due.get for an interest step
-                corrected = f'min(interest_due.get("{cname}", 0), available_funds)'
-                logger.warning(
-                    f"Step {step_num} ({cname} interest): LLM used balances formula "
-                    f"'{formula}' — replaced with '{corrected}'"
-                )
-                formula = corrected
+    if any(kw in desc for kw in ("realized loss", "loss reimburs", "write-down")):
+        return 'min(realized_loss, available_funds)'
 
-            elif cname and ptype == "principal" and is_reserve_formula:
-                corrected = f'min(balances.get("{cname}", 0), available_funds)'
-                logger.warning(
-                    f"Step {step_num} ({cname} principal): LLM generated reserve formula "
-                    f"'{formula}' — replaced with '{corrected}'"
-                )
-                formula = corrected
-
-            formula_map[int(step_num)] = formula
-        logger.info(f"Generated {len(formula_map)} step formulas")
-        return formula_map
-    except Exception as e:
-        logger.warning(f"Formula generation failed: {e}")
-        return {}
+    # excess / residual / pass-through
+    return 'available_funds'
 
 
-def _apply_formulas_to_steps(
-    steps_raw: List[Dict],
-    formula_map: Dict[int, str],
-) -> List[Dict]:
-    """Attach generated formulas back to step dicts."""
+def _apply_formulas_to_steps(steps_raw: List[Dict], _unused=None) -> List[Dict]:
+    """Assign deterministic formulas to every waterfall step in-place."""
     for s in steps_raw:
-        step_num = s.get("step")
-        if step_num is not None and step_num in formula_map:
-            s["amount_formula"] = formula_map[step_num]
+        s["amount_formula"] = _deterministic_formula(s)
     return steps_raw
 
 
 # ---------------------------------------------------------------------------
-# Main extraction pipeline
+# Gemini structured JSON extraction
 # ---------------------------------------------------------------------------
+
+def gemini_extract_json(prompt_text, expect_list=False):
+    """Call Gemini and parse the response as JSON."""
+
+    for attempt in range(1, GEMINI_MAX_RETRIES + 1):
+
+        try:
+
+            response = _get_gemini_client().models.generate_content(
+                model=GEMINI_MODEL_NAME,
+                contents=prompt_text
+            )
+
+            content = response.text.strip()
+
+            # strip markdown code fences
+            fence_m = re.search(
+                r"```(?:json)?\s*([\s\S]+?)\s*```",
+                content,
+                re.DOTALL,
+            )
+            if fence_m:
+                content = fence_m.group(1).strip()
+
+            # direct parse
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                pass
+
+            # find embedded object / array
+            for pat in (
+                r"(\{[\s\S]+\})",
+                r"(\[[\s\S]+\])",
+            ):
+                m = re.search(pat, content)
+                if m:
+                    try:
+                        return json.loads(m.group(1))
+                    except json.JSONDecodeError:
+                        pass
+
+            # repair truncated JSON
+            for suffix in ("]}", "}]", "}", "]"):
+                try:
+                    return json.loads(content + suffix)
+                except Exception:
+                    pass
+
+            return [] if expect_list else {}
+
+        except Exception as e:
+
+            err = str(e)
+
+            is_retryable = (
+                "502" in err or "503" in err
+                or "500" in err or "429" in err
+                or "overloaded" in err.lower()
+                or "rate" in err.lower()
+            )
+
+            if is_retryable and attempt < GEMINI_MAX_RETRIES:
+
+                print(
+                    f"gemini_extract_json retry "
+                    f"{attempt} ({err[:50]})..."
+                )
+
+                time.sleep(GEMINI_RETRY_SLEEP)
+
+            else:
+
+                print(f"gemini_extract_json error: {err[:80]}")
+
+                return [] if expect_list else {}
+
+
+# ---------------------------------------------------------------------------
+# Main mapping pipeline
+# ---------------------------------------------------------------------------
+def map_deal_config(results):
+    """
+    Takes the list of extracted page dicts from extract_pdf()
+    and produces a structured deal configuration dict.
+
+    Steps:
+      1. Convert results → [(page_num, text)]
+      2. Regex pre-scan (dates, amounts, classes, margins)
+      3. Score pages per section
+      4. Parallel Gemini calls for deal_info / classes /
+         fees / waterfall / triggers
+      5. Override LLM values with authoritative regex values
+      6. Reconcile / hallucination guard
+      7. Validation pass for missing critical fields
+      8. Return structured dict + section_page_map
+    """
+
+    # ---- 1. build pages list ----
+    pages = [
+        (r["page"], r["content"])
+        for r in results
+        if r.get("content")
+    ]
+    total_pages = len(pages)
+
+    if not pages:
+        print("MAP: no page content to map")
+        return {}
+
+    print(f"MAP: {total_pages} pages")
+
+    methods = _methods_by_page(results)
+
+    # ---- 2. regex pre-scan ----
+    print("MAP: regex pre-scan")
+    regex_data = regex_prescan(pages)
+    print(
+        f"MAP: regex found: "
+        f"{[k for k in regex_data if not k.startswith('regex_')]}"
+    )
+
+    # ---- 3. score pages ----
+    scores = score_pages(pages)
+
+    # ---- 4a. build text windows for each section ----
+    # deal info: first 40 pages + top scored deal pages
+    deal_pages_set = set(range(1, min(41, total_pages + 1)))
+    for pnum, _ in scores.get("deal_summary", [])[:8]:
+        for offset in range(-2, 5):
+            deal_pages_set.add(pnum + offset)
+    deal_info_text = _join_pages_for_mapping(
+        sorted(deal_pages_set), pages, methods
+    )[:20000]
+
+    cert_text = get_best_pages_text(
+        pages, scores, "certificate_table",
+        window=10, max_chars=22000, top_n=6, methods_by_page=methods,
+    )
+    early_text = _join_pages_for_mapping(
+        list(range(1, min(21, total_pages + 1))), pages, methods
+    )
+    cert_text = (cert_text + "\n\n" + early_text)[:22000]
+
+    fee_text = get_best_pages_text(
+        pages, scores, "fees_expenses",
+        window=8, max_chars=18000, top_n=5, methods_by_page=methods,
+    )
+    if not fee_text:
+        fee_pages = [
+            p for p, t in pages
+            if "basis point" in t.lower() or "servicing fee" in t.lower()
+        ][:10]
+        fee_text = _join_pages_for_mapping(sorted(fee_pages), pages, methods)[:18000]
+
+    wf_text = _build_waterfall_text(pages, scores, methods, max_chars=20000)
+
+    trigger_text = get_best_pages_text(
+        pages, scores, "loss_allocation",
+        window=8, max_chars=16000, top_n=4, methods_by_page=methods,
+    ) or wf_text[:16000]
+
+    # ---- 4b. parallel Gemini calls ----
+    print("MAP: running Gemini structured extraction")
+
+    def _call(prompt_template, text, expect_list=False):
+        return gemini_extract_json(
+            prompt_template.replace("{text}", text),
+            expect_list=expect_list,
+        )
+
+    with ThreadPoolExecutor(max_workers=3) as ex:
+
+        f_deal = ex.submit(
+            _call, DEAL_INFO_PROMPT, deal_info_text
+        )
+        f_classes = ex.submit(
+            _call, CLASSES_PROMPT, cert_text, True
+        )
+        f_fees = ex.submit(
+            _call, FEES_PROMPT, fee_text, True
+        )
+        f_wf = ex.submit(
+            _call, WATERFALL_PROMPT, wf_text
+        )
+        f_triggers = ex.submit(
+            _call, TRIGGERS_PROMPT, trigger_text
+        )
+
+        deal_info     = f_deal.result()
+        classes_raw   = f_classes.result()
+        fees_raw      = f_fees.result()
+        waterfall_raw = f_wf.result()
+        triggers_raw  = f_triggers.result()
+
+    # normalise shapes
+    if isinstance(deal_info, list):
+        deal_info = {}
+    if not isinstance(classes_raw, list):
+        classes_raw = []
+    if not isinstance(fees_raw, list):
+        fees_raw = []
+    if not isinstance(waterfall_raw, dict):
+        waterfall_raw = {}
+
+    # fill deal_info gaps with regex
+    for field, value in regex_data.items():
+        if (
+            not field.startswith("regex_")
+            and not deal_info.get(field)
+        ):
+            deal_info[field] = value
+
+    print(
+        f"MAP: LLM extracted "
+        f"{len(classes_raw)} classes, "
+        f"{len(fees_raw)} fees"
+    )
+
+    # ---- 5. pdfplumber direct table: add missing classes only (no field overrides) ----
+    direct_classes: List[Dict] = []
+    if PDF_PATH and os.path.exists(PDF_PATH):
+        try:
+            direct_classes = _extract_certificate_table_direct(PDF_PATH, pages)
+        except Exception as e:
+            logger.warning(f"Direct table extraction in map_deal_config failed: {e}")
+    existing_norms = {_normalize_class_name(r.get("class_name", "")) for r in classes_raw}
+    for dc in (direct_classes or []):
+        if _normalize_class_name(dc.get("class_name", "")) not in existing_norms:
+            classes_raw.append(dc)
+            logger.info(f"Direct-table added missing class: {dc['class_name']}")
+
+    # ---- filter waterfall by known classes ----
+    valid_names = {
+        r.get("class_name")
+        for r in classes_raw
+        if r.get("class_name")
+    }
+    for wf_key in (
+        "interest_waterfall",
+        "principal_waterfall",
+        "excess_cashflow_waterfall",
+    ):
+        raw_steps = waterfall_raw.get(wf_key) or []
+        waterfall_raw[wf_key] = (
+            _filter_waterfall_steps_by_classes(
+                raw_steps, valid_names
+            )
+        )
+
+    # ---- 7. validation pass ----
+    missing = []
+    if not deal_info.get("cut_off_date"):
+        missing.append("cut_off_date")
+    if not deal_info.get("closing_date"):
+        missing.append("closing_date")
+    if not deal_info.get("original_pool_balance"):
+        missing.append("original_pool_balance")
+
+    zero_principal = [
+        r.get("class_name") for r in classes_raw
+        if not _safe_float(r.get("initial_principal"))
+        and not r.get("is_residual")
+    ]
+    if zero_principal:
+        missing.append(
+            f"initial_principal for: {zero_principal}"
+        )
+
+    if missing:
+
+        print(f"MAP: validation pass for {missing}")
+
+        val_pages_set = set(
+            range(1, min(51, total_pages + 1))
+        )
+        for section in (
+            "certificate_table",
+            "deal_summary",
+        ):
+            for pnum, _ in scores.get(section, [])[:5]:
+                for offset in range(-2, 6):
+                    val_pages_set.add(pnum + offset)
+
+        val_text = _join_pages_for_mapping(
+            sorted(p for p in val_pages_set if p in page_dict),
+            pages, methods,
+        )[:22000]
+
+        val_result = gemini_extract_json(
+            VALIDATION_PROMPT
+            .replace(
+                "{missing_fields}",
+                "\n".join(f"- {m}" for m in missing),
+            )
+            .replace("{text}", val_text)
+        )
+
+        if isinstance(val_result, dict):
+            for field in (
+                "cut_off_date", "closing_date",
+                "first_payment_date",
+                "original_pool_balance",
+            ):
+                if (
+                    not deal_info.get(field)
+                    and val_result.get(field)
+                ):
+                    deal_info[field] = val_result[field]
+
+    # ---- 8. assemble final dict ----
+    section_page_map = _build_section_page_map(
+        scores, total_pages
+    )
+
+    deal_config = {
+        "deal_info": deal_info,
+        "classes": classes_raw,
+        "fees": fees_raw,
+        "waterfall": waterfall_raw,
+        "triggers": triggers_raw,
+        "section_page_map": section_page_map,
+        "regex_found": regex_data,
+    }
+
+    print(
+        f"MAP: complete — "
+        f"{len(classes_raw)} classes, "
+        f"{len(fees_raw)} fees, "
+        f"waterfall steps: "
+        f"{len(waterfall_raw.get('interest_waterfall', []))}"
+        f" interest / "
+        f"{len(waterfall_raw.get('principal_waterfall', []))}"
+        f" principal"
+    )
+
+    return deal_config
+
+# =====================================================
+# AZURE OPENAI RETRIEVAL CALL (GPT-5.5)
+# =====================================================
+
+async def _call_gemini(
+    system: str,
+    user: str,
+    expect_list: bool = False,
+) -> Any:
+    """
+    Async LLM call for structured retrieval/extraction using Azure OpenAI GPT-5.5.
+    Named _call_gemini for API compatibility; internally uses AzureChatOpenAI.
+    PDF extraction (raw page text) still uses Gemini — only the structured
+    extraction prompts (deal_info, classes, fees, waterfall, etc.) use GPT-5.5.
+    """
+    llm = _get_retrieval_llm()
+    full_system = _RETRIEVAL_PASS1_FORMAT_SYSTEM + system
+    messages = [SystemMessage(content=full_system), HumanMessage(content=user)]
+
+    for attempt in range(1, 4):
+        try:
+            resp = await llm.ainvoke(messages)
+            content = resp.content.strip()
+
+            # Strip markdown code fences
+            fence_m = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", content, re.DOTALL)
+            if fence_m:
+                content = fence_m.group(1).strip()
+
+            # Direct parse
+            try:
+                result = json.loads(content)
+            except json.JSONDecodeError:
+                result = None
+                for pat in (r"(\{[\s\S]+\})", r"(\[[\s\S]+\])"):
+                    m = re.search(pat, content)
+                    if m:
+                        try:
+                            result = json.loads(m.group(1))
+                            break
+                        except json.JSONDecodeError:
+                            pass
+
+            if result is None:
+                # Attempt repair of truncated JSON
+                for suffix in ("]}", "}]", "}", "]"):
+                    try:
+                        result = json.loads(content + suffix)
+                        break
+                    except Exception:
+                        pass
+
+            if result is None:
+                result = [] if expect_list else {}
+
+            if expect_list:
+                if isinstance(result, list):
+                    return result
+                if isinstance(result, dict):
+                    for key in ("classes", "certificates", "tranches", "bonds",
+                                "fees", "expenses", "fee_schedule", "steps", "waterfall"):
+                        if isinstance(result.get(key), list):
+                            return result[key]
+                return []
+            return result if result is not None else {}
+
+        except Exception as e:
+            err = str(e)
+            is_retryable = (
+                "429" in err or "503" in err or "502" in err
+                or "500" in err or "rate" in err.lower()
+                or "overloaded" in err.lower()
+            )
+            if is_retryable and attempt < 3:
+                logger.warning(f"_call_gemini retry {attempt}: {err[:80]}")
+                await asyncio.sleep(8)
+            else:
+                logger.warning(f"_call_gemini failed: {err[:120]}")
+                return [] if expect_list else {}
+
 
 async def extract_deal_config_from_pdf(
     pdf_path: str,
     deal_id: str,
     progress_callback=None,
-) -> DealConfig:
+) -> "DealConfig":
     """
     High-accuracy multi-pass extraction pipeline.
     """
@@ -1891,13 +3035,21 @@ async def extract_deal_config_from_pdf(
                 pass
         logger.info(f"[{pct}%] {step}")
 
-    llm = _get_llm(temperature=0.0)
 
-    # === PASS 1: Extract all pages (text + tables) ===
-    await _progress("Extracting PDF text and tables", 5)
-    pages = extract_pdf_pages(pdf_path)
+    # === PASS 1: Gemini bulk extraction of the PDF (unchanged pipeline) ===
+    await _progress("Extracting PDF text and tables via Gemini", 5)
+    _t0 = time.perf_counter()
+    raw_results: List[Dict] = await asyncio.to_thread(extract_pdf, pdf_path)
+    logger.info(f"PDF extraction complete in {time.perf_counter() - _t0:.1f}s")
+    pages: List[Tuple[int, str]] = [
+        (r["page"], r.get("content", ""))
+        for r in raw_results
+        if r.get("content")
+    ]
     total_pages = len(pages)
-    logger.info(f"Total pages: {total_pages}")
+    logger.info(f"Total pages extracted: {total_pages}")
+
+    methods = _methods_by_page(raw_results)
 
     # === PASS 2: Regex pre-scan across ALL pages ===
     await _progress("Scanning all pages for key values", 12)
@@ -1910,24 +3062,28 @@ async def extract_deal_config_from_pdf(
         logger.info(f"  {section}: top pages = {[p for p, _ in top[:5]]}")
 
     # === Prepare inputs for Group A (Pass 4 + Pass 5b LLM) ===
-    # Pass 4 input: deal info pages
     deal_info_pages = set(range(1, min(41, total_pages + 1)))
+    # deal_summary top pages
     for pnum, _ in scores.get("deal_summary", [])[:8]:
         for offset in range(-2, 5):
             deal_info_pages.add(pnum + offset)
-    deal_info_text = "\n\n".join(
-        f"=== PAGE {p} ===\n{pages[p-1][1]}"
-        for p in sorted(deal_info_pages)
-        if 1 <= p <= total_pages
-    )[:20000]
+    # Also include fee pages — servicer names and fee rates often appear in the fee schedule section
+    for pnum, _ in scores.get("fees_expenses", [])[:5]:
+        for offset in range(-3, 6):
+            deal_info_pages.add(pnum + offset)
+    deal_info_text = _join_pages_for_mapping(
+        sorted(p for p in deal_info_pages if 1 <= p <= total_pages),
+        pages, methods,
+    )[:24000]
 
-    # Pass 5b input: certificate table pages
-    cert_text = get_best_pages_text(pages, scores, "certificate_table",
-                                     window=10, max_chars=22000, top_n=6)
-    early_pages_text = "\n\n".join(
-        f"=== PAGE {p} ===\n{pages[p-1][1]}" for p in range(1, min(21, total_pages + 1))
+    cert_text = get_best_pages_text(
+        pages, scores, "certificate_table",
+        window=10, max_chars=22000, top_n=6, methods_by_page=methods,
     )
-    cert_text = (early_pages_text + "\n\n" + cert_text)[:22000]
+    early_pages_text = _join_pages_for_mapping(
+        list(range(1, min(21, total_pages + 1))), pages, methods,
+    )
+    cert_text = (cert_text + "\n\n" + early_pages_text)[:22000]
 
     # === GROUP A: Pass 4 LLM + Pass 5b LLM + Pass 5a (direct table parse) all in parallel ===
     # Pass 5a is blocking pdfplumber work, so we hand it off to a thread; the two LLM
@@ -1935,18 +3091,17 @@ async def extract_deal_config_from_pdf(
     await _progress("Extracting deal info + cert classes + direct table (parallel)", 25)
     _grp_a_t0 = time.perf_counter()
     deal_info, classes_raw, direct_classes = await asyncio.gather(
-        _call_llm(
-            llm,
+        _call_gemini(
             "You are an expert ABS/MBS structured finance analyst. Extract exact field values as JSON. NEVER fabricate values.",
             # Use replace() instead of .format() so that braces in PDF text don't cause KeyError
             DEAL_INFO_PROMPT.replace("{text}", deal_info_text),
         ),
-        _call_llm(
-            llm,
+        _call_gemini(
             (
                 "You are an expert ABS/MBS analyst. Extract ALL certificate classes from the "
                 "'THE OFFERED CERTIFICATES' table. Return ONLY a JSON array. "
-                "CRITICAL: copy initial_principal EXACTLY from the table — never round or estimate."
+                "Pages mix pymupdf_text (line-broken Class/$ rows) and gemini_vision (markdown tables) — "
+                "parse both. CRITICAL: copy initial_principal EXACTLY — never round or estimate."
             ),
             CLASSES_PROMPT.replace("{text}", cert_text),
             expect_list=True,
@@ -1959,12 +3114,22 @@ async def extract_deal_config_from_pdf(
         f"{[c.get('class_name') for c in direct_classes]}"
     )
 
+    if not isinstance(deal_info, dict):
+        deal_info = {}
     # Pass 4 post-processing: merge regex findings as fallback
     for field, value in regex_data.items():
-        if not deal_info.get(field):
+        if not field.startswith("regex_") and not deal_info.get(field):
             deal_info[field] = value
             logger.info(f"  Regex fallback: {field} = {value}")
-    logger.info(f"Extracted deal info: deal_name={deal_info.get('deal_name')}, cut_off_date={deal_info.get('cut_off_date')}")
+
+    # Servicer fallback: if LLM returned no servicers, use regex-extracted ones
+    if not deal_info.get("servicers") and regex_data.get("regex_servicers"):
+        deal_info["servicers"] = regex_data["regex_servicers"]
+        logger.info(
+            f"  Regex servicers applied: {[s['servicer_name'] for s in deal_info['servicers']]}"
+        )
+
+    logger.info(f"Extracted deal info: deal_name={deal_info.get('deal_name')}, cut_off_date={deal_info.get('cut_off_date')}, servicers={len(deal_info.get('servicers') or [])}")
 
     # Pass 5b post-processing: normalize shape
     if isinstance(classes_raw, dict):
@@ -1976,46 +3141,35 @@ async def extract_deal_config_from_pdf(
         classes_raw = []
     logger.info(f"LLM extracted {len(classes_raw)} certificate classes (before override)")
 
-    # === PASS 5c: Override LLM values with authoritative direct/regex values ===
-    # Priority: pdfplumber direct > regex > LLM
-    # initial_principal from LLM is NEVER trusted over structured extraction.
-    classes_raw = apply_regex_to_classes(classes_raw, regex_data, direct_classes=direct_classes)
-    logger.info(f"After authoritative override: {len(classes_raw)} classes")
-
-    # === HALLUCINATION GUARD: reconcile LLM classes against regex-verified names ===
-    classes_raw = _reconcile_classes_with_regex(classes_raw, regex_data)
+    # Add classes found by pdfplumber that LLM completely missed (no field overrides)
+    existing_norms = {_normalize_class_name(r.get("class_name", "")) for r in classes_raw}
+    for dc in (direct_classes or []):
+        if _normalize_class_name(dc.get("class_name", "")) not in existing_norms:
+            classes_raw.append(dc)
+            logger.info(f"Direct-table added missing class: {dc['class_name']}")
 
     # === PASS 6: Extract fees (scan fee sections + broad scan) ===
     # === Prepare inputs for Group B (Pass 6 + Pass 7 + Pass 8 in parallel) ===
     # Pass 6 input: fee pages
-    fee_text = get_best_pages_text(pages, scores, "fees_expenses",
-                                    window=8, max_chars=18000, top_n=5)
+    fee_text = get_best_pages_text(
+        pages, scores, "fees_expenses",
+        window=8, max_chars=18000, top_n=5, methods_by_page=methods,
+    )
     if not fee_text:
-        # Fallback: scan pages with "fee" or "basis points" in them
         fee_pages_fallback = [
             p for p, t in pages
             if "basis point" in t.lower() or "servicing fee" in t.lower()
         ][:10]
-        fee_text = "\n\n".join(
-            f"=== PAGE {p} ===\n{pages[p-1][1]}" for p in sorted(fee_pages_fallback)
-        )[:18000]
+        fee_text = _join_pages_for_mapping(sorted(fee_pages_fallback), pages, methods)[:18000]
 
-    # Pass 7 input: waterfall pages
-    wf_text_1 = get_best_pages_text(pages, scores, "priority_of_payments",
-                                     window=15, max_chars=20000, top_n=5)
-    if not wf_text_1:
-        # Fallback: pages with "first, to pay" or "distribution date"
-        wf_pages_fb = [
-            p for p, t in pages
-            if re.search(r"first,?\s+to\s+pay|distribution date", t, re.IGNORECASE)
-        ][:8]
-        wf_text_1 = "\n\n".join(
-            f"=== PAGE {p} ===\n{pages[p-1][1]}" for p in sorted(wf_pages_fb)
-        )[:20000]
+    # Pass 7 input: waterfall pages (numbered Priority of Distributions section)
+    wf_text_1 = _build_waterfall_text(pages, scores, methods, max_chars=22000)
 
     # Pass 8 input: trigger pages (falls back to waterfall text)
-    trigger_text = get_best_pages_text(pages, scores, "loss_allocation",
-                                        window=8, max_chars=16000, top_n=4)
+    trigger_text = get_best_pages_text(
+        pages, scores, "loss_allocation",
+        window=8, max_chars=16000, top_n=4, methods_by_page=methods,
+    )
     if not trigger_text:
         trigger_text = wf_text_1[:16000]
 
@@ -2023,19 +3177,16 @@ async def extract_deal_config_from_pdf(
     await _progress("Extracting fees + waterfall + triggers (parallel)", 48)
     _grp_b_t0 = time.perf_counter()
     fees_raw, waterfall_raw, loss_triggers_raw = await asyncio.gather(
-        _call_llm(
-            llm,
+        _call_gemini(
             "You are an expert ABS/MBS analyst. Extract ALL fees. Return ONLY a JSON array.",
             FEES_PROMPT.replace("{text}", fee_text),
             expect_list=True,
         ),
-        _call_llm(
-            llm,
+        _call_gemini(
             "You are an expert ABS/MBS analyst. Extract the complete Priority of Payments. Follow numbered steps exactly.",
             WATERFALL_PROMPT.replace("{text}", wf_text_1),
         ),
-        _call_llm(
-            llm,
+        _call_gemini(
             "You are an expert ABS/MBS analyst. Extract loss allocation, trigger tests, and reserve accounts.",
             TRIGGERS_PROMPT.replace("{text}", trigger_text),
         ),
@@ -2051,6 +3202,30 @@ async def extract_deal_config_from_pdf(
     if not isinstance(fees_raw, list):
         fees_raw = []
     logger.info(f"Extracted {len(fees_raw)} fee entries")
+
+    if not isinstance(waterfall_raw, dict):
+        waterfall_raw = {}
+
+    # Retry waterfall if LLM returned empty but numbered Priority section exists in PDF
+    if not any(waterfall_raw.get(k) for k in (
+        "interest_waterfall", "principal_waterfall", "excess_cashflow_waterfall"
+    )):
+        pom_pages = _find_priority_of_payments_pages(pages)
+        if pom_pages:
+            logger.info(
+                f"Waterfall empty — re-querying on Priority of Distributions pages {pom_pages}"
+            )
+            pom_text = _join_pages_for_mapping(pom_pages, pages, methods)
+            retry_wf = await _call_gemini(
+                "You are an expert ABS/MBS analyst. Extract the complete Priority of Payments. "
+                "Return a JSON object with interest_waterfall, principal_waterfall, "
+                "and excess_cashflow_waterfall arrays.",
+                WATERFALL_PROMPT.replace("{text}", pom_text[:22000]),
+            )
+            if isinstance(retry_wf, dict) and any(retry_wf.get(k) for k in (
+                "interest_waterfall", "principal_waterfall", "excess_cashflow_waterfall"
+            )):
+                waterfall_raw = retry_wf
 
     # Pass 7 post-processing: filter hallucinated class names from waterfall steps
     _valid_class_names = {r.get("class_name") for r in classes_raw if r.get("class_name")}
@@ -2094,13 +3269,12 @@ async def extract_deal_config_from_pdf(
             for pnum, _ in scores.get(section, [])[:5]:
                 for offset in range(-2, 6):
                     val_pages.add(pnum + offset)
-        val_text = "\n\n".join(
-            f"=== PAGE {p} ===\n{pages[p-1][1]}"
-            for p in sorted(val_pages) if 1 <= p <= total_pages
+        val_text = _join_pages_for_mapping(
+            sorted(p for p in val_pages if 1 <= p <= total_pages),
+            pages, methods,
         )[:22000]
 
-        val_result = await _call_llm(
-            llm,
+        val_result = await _call_gemini(
             "You are an expert ABS/MBS analyst doing a validation pass. Extract ONLY the specifically requested fields. Return JSON.",
             VALIDATION_PROMPT
                 .replace("{missing_fields}", "\n".join(f"- {m}" for m in missing))
@@ -2131,21 +3305,17 @@ async def extract_deal_config_from_pdf(
                                 classes_raw[i]["margin"] = upd["margin"]
                     break
 
-    # === PASS 10: Generate math formulas for waterfall steps ===
+    # === PASS 10: Assign deterministic math formulas to every waterfall step ===
     await _progress("Generating waterfall computation formulas", 88)
-    all_wf_steps_raw = (
-        (waterfall_raw.get("interest_waterfall") or []) +
-        (waterfall_raw.get("principal_waterfall") or []) +
-        (waterfall_raw.get("excess_cashflow_waterfall") or [])
+    for wf_key in ("interest_waterfall", "principal_waterfall", "excess_cashflow_waterfall"):
+        bucket = waterfall_raw.get(wf_key) or []
+        if bucket:
+            waterfall_raw[wf_key] = _apply_formulas_to_steps(bucket)
+    total_formulas = sum(
+        len(waterfall_raw.get(k) or [])
+        for k in ("interest_waterfall", "principal_waterfall", "excess_cashflow_waterfall")
     )
-    if all_wf_steps_raw:
-        formula_map = await _generate_step_formulas(llm, all_wf_steps_raw)
-        if formula_map:
-            # Apply formulas per-bucket (step numbers restart per bucket)
-            offset = 0
-            for wf_key in ("interest_waterfall", "principal_waterfall", "excess_cashflow_waterfall"):
-                bucket = waterfall_raw.get(wf_key) or []
-                waterfall_raw[wf_key] = _apply_formulas_to_steps(bucket, formula_map)
+    logger.info(f"Generated {total_formulas} step formulas")
 
     # === PASS 11: Assemble DealConfig ===
     await _progress("Assembling deal configuration", 92)
@@ -2192,10 +3362,9 @@ async def extract_deal_config_from_pdf(
                 test_name=t.get("test_name", ""),
                 test_type=t.get("test_type", "other"),
                 description=t.get("description", ""),
-                threshold=float(t.get("threshold") or 0.0) if t.get("threshold") is not None else None,
+                threshold=float(t.get("threshold") or 0.0),
                 operator=t.get("operator", "greater_than"),
-                trigger_condition=t.get("trigger_condition") or None,
-                trigger_action=t.get("trigger_action") or None,
+                trigger_on_failure=t.get("trigger_on_failure"),
             ))
         except Exception:
             pass
@@ -2262,7 +3431,7 @@ async def extract_deal_config_from_pdf(
         triggers=triggers,
         reserve_accounts=reserve_accounts,
         loss_allocation_order=loss_order,
-        extraction_source="llm_extracted",
+        extraction_source="gemini_extracted",
         extraction_confidence=0.85 if all([
             deal_info.get("cut_off_date"),
             classes and any(c.initial_principal > 0 for c in classes),
@@ -2291,39 +3460,28 @@ async def extract_deal_config_from_pdf(
 
 
 # ---------------------------------------------------------------------------
-# Natural-language trigger condition → Python expression
+# Natural-language trigger condition -> Python expression
 #
 # Used by the trigger edit UI when a user does not know the engine's variable
 # names. We give the LLM a curated catalog (see ``services.trigger_variables``)
 # and ask it to emit a Python boolean expression that uses ONLY those names.
-# Action flag name is generated alongside so the trigger plugs straight into
-# ``_evaluate_config_trigger`` without further mapping.
 # ---------------------------------------------------------------------------
 
 
-TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT = """You translate plain-English ABS/MBS \
-trigger descriptions into Python boolean expressions that the waterfall engine \
-can evaluate.
+TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT = """You translate plain-English ABS/MBS trigger descriptions into Python boolean expressions that the waterfall engine can evaluate.
 
 You MUST output a JSON object with these keys:
-  "condition":   string — a single Python boolean expression. References ONLY \
-the variable names from the catalog below. No imports, no calls, no lambdas.
-  "action":      string — SCREAMING_SNAKE_CASE flag name set to True when the \
-condition fires. Reuse one of the known action names if it fits.
-  "explanation": string — one short sentence describing what the expression \
-checks, for the user to sanity-check.
+  "condition":   string - a single Python boolean expression. References ONLY the variable names from the catalog below. No imports, no calls, no lambdas.
+  "action":      string - SCREAMING_SNAKE_CASE flag name set to True when the condition fires. Reuse one of the known action names if it fits.
+  "explanation": string - one short sentence describing what the expression checks, for the user to sanity-check.
 
 HARD RULES
-1. Use ONLY the variable names listed in the catalog. Inventing names \
-(e.g., ``oc_ratio``, ``trigger_value``) is forbidden — those will fail at \
-evaluation time.
-2. Percentages in the catalog are decimal fractions: 5% → 0.05, 12.5% → 0.125.
+1. Use ONLY the variable names listed in the catalog. Inventing names (e.g., ``oc_ratio``, ``trigger_value``) is forbidden - those will fail at evaluation time.
+2. Percentages in the catalog are decimal fractions: 5% -> 0.05, 12.5% -> 0.125.
 3. Dollar amounts are absolute (no scaling).
-4. The expression must be self-contained — no statements, no semicolons.
-5. If the description is ambiguous, pick the most defensible mapping and call \
-out the assumption inside ``explanation``.
-6. If no listed variable matches the description, return condition="" and \
-explanation describing which variable would be needed."""
+4. The expression must be self-contained - no statements, no semicolons.
+5. If the description is ambiguous, pick the most defensible mapping and call out the assumption inside ``explanation``.
+6. If no listed variable matches the description, return condition="" and explanation describing which variable would be needed."""
 
 
 def _build_trigger_nl_to_expr_user_prompt(description: str, test_name: str = "") -> str:
@@ -2341,7 +3499,7 @@ def _build_trigger_nl_to_expr_user_prompt(description: str, test_name: str = "")
     return (
         f"{test_name_block}"
         f"PLAIN-ENGLISH DESCRIPTION:\n{description.strip()}\n\n"
-        f"AVAILABLE VARIABLES (use ONLY these names — no others):\n"
+        f"AVAILABLE VARIABLES (use ONLY these names - no others):\n"
         f"{variable_catalog_for_prompt()}\n\n"
         f"KNOWN ACTION FLAG NAMES (reuse if applicable, else coin a new "
         f"SCREAMING_SNAKE_CASE name):\n"
@@ -2364,13 +3522,11 @@ async def generate_trigger_expression(
     if not description or not description.strip():
         return {"condition": "", "action": "", "explanation": ""}
 
-    llm = _get_llm(temperature=0.0)
     user_prompt = _build_trigger_nl_to_expr_user_prompt(description, test_name)
 
-    raw = await _call_llm(
-        llm=llm,
-        system_prompt=TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT,
-        user_content=user_prompt,
+    raw = await _call_gemini(
+        system=TRIGGER_NL_TO_EXPR_SYSTEM_PROMPT,
+        user=user_prompt,
         expect_list=False,
     )
 
@@ -2389,13 +3545,13 @@ async def generate_trigger_expression(
         diag = _validate_trigger_expression(condition)
         if diag:
             logger.warning(
-                f"Trigger NL→expr rejected: {diag}. Raw expression={condition!r}"
+                f"Trigger NL->expr rejected: {diag}. Raw expression={condition!r}"
             )
-            # Drop the condition — the frontend will see an empty field plus a
+            # Drop the condition - the frontend will see an empty field plus a
             # diagnostic explanation, so the user can rephrase or fill in
             # manually rather than save a no-op trigger.
             explanation = (
-                f"⚠ Could not produce a valid expression: {diag} "
+                f"Could not produce a valid expression: {diag} "
                 f"The model proposed `{condition}`. Try rephrasing or enter "
                 f"the expression manually."
             )
@@ -2460,3 +3616,56 @@ def _validate_trigger_expression(expression: str) -> Optional[str]:
         return f"would raise {type(e).__name__} at evaluation time: {e}"
 
     return None
+
+
+# =====================================================
+# MAIN
+# =====================================================
+
+DEAL_CONFIG_JSON = OUTPUT_JSON.replace(
+    "extracted_output", "deal_config"
+)
+
+
+if __name__ == "__main__":
+
+    # -------------------------------------------------
+    # STEP 1 — PDF extraction (Gemini bulk)
+    # -------------------------------------------------
+
+    if os.path.exists(OUTPUT_JSON):
+
+        print("LOADING CACHED EXTRACTION")
+
+        results = load_extraction()
+
+    else:
+
+        results = extract_pdf()
+
+    # -------------------------------------------------
+    # STEP 2 — structured mapping
+    # -------------------------------------------------
+
+    if os.path.exists(DEAL_CONFIG_JSON):
+
+        print("LOADING CACHED DEAL CONFIG")
+
+        with open(
+            DEAL_CONFIG_JSON, "r", encoding="utf-8"
+        ) as f:
+            deal_config = json.load(f)
+
+    else:
+
+        deal_config = map_deal_config(results)
+
+        with open(
+            DEAL_CONFIG_JSON, "w", encoding="utf-8"
+        ) as f:
+            json.dump(
+                deal_config, f, indent=2,
+                ensure_ascii=False
+            )
+
+        print(f"DEAL CONFIG SAVED → {DEAL_CONFIG_JSON}")

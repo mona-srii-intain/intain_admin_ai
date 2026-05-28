@@ -19,10 +19,11 @@ from __future__ import annotations
 
 import logging
 import math
+import calendar
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-from models.deal import CertificateClass, DealConfig, FeeConfig, WaterfallStep
+from models.deal import CertificateClass, DealConfig, FeeConfig, TriggerTest, WaterfallStep
 from models.waterfall import (
     AccountEntry,
     ClassPaymentSummary,
@@ -230,11 +231,108 @@ def _compute_accrual_dates(payment_date: date) -> Tuple[date, date, int]:
     return accrual_start, accrual_end, days
 
 
+def _parse_iso_date(raw: Optional[str]) -> Optional[date]:
+    """Parse YYYY-MM-DD safely."""
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(str(raw), "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+
+def _subtract_months(d: date, months: int) -> date:
+    """Return ``d`` shifted backward by ``months`` calendar months."""
+    y = d.year
+    m = d.month - months
+    while m <= 0:
+        m += 12
+        y -= 1
+    max_day = calendar.monthrange(y, m)[1]
+    return date(y, m, min(d.day, max_day))
+
+
+def _payment_frequency_months(payment_frequency: Optional[str]) -> int:
+    """Map payment frequency string to calendar months per payment period."""
+    f = (payment_frequency or "Monthly").strip().lower()
+    if "quarter" in f:
+        return 3
+    if "semi" in f or "half" in f:
+        return 6
+    if "annual" in f and "semi" not in f:
+        return 12
+    return 1
+
+
+def _resolve_accrual_period(
+    deal_config: DealConfig,
+    payment_date: date,
+    prior_waterfall_result: Optional[Dict] = None,
+    prior_history: Optional[List[Dict]] = None,
+) -> Tuple[date, date, int]:
+    """
+    Resolve accrual window + day count for this payment period.
+
+    Rules:
+      1) If payment_date == first_payment_date and deal_config.accrual_days is
+         set, use that explicit first-period day count.
+      2) Otherwise, use actual days between the previous payment date and the
+         current payment date (Act/360 numerator convention).
+      3) If no prior payment is available, fall back to the legacy 20th->19th
+         window logic for backward compatibility.
+    """
+    prior_history = prior_history or []
+    accrual_end = payment_date - timedelta(days=1)
+    first_payment_date = _parse_iso_date(deal_config.first_payment_date)
+
+    # Rule 1: explicit first-period override from deal config
+    first_period_days = int(deal_config.accrual_days or 0)
+    if (
+        first_payment_date
+        and payment_date == first_payment_date
+        and first_period_days > 0
+    ):
+        accrual_start = accrual_end - timedelta(days=first_period_days - 1)
+        logger.info(
+            f"Using deal-config first-period accrual_days={first_period_days} "
+            f"for payment_date={payment_date}"
+        )
+        return accrual_start, accrual_end, first_period_days
+
+    # Rule 2: derive actual days from prior payment date -> current payment date
+    prev_payment_date: Optional[date] = None
+    if prior_waterfall_result:
+        prev_payment_date = _parse_iso_date(prior_waterfall_result.get("payment_date"))
+    if not prev_payment_date and prior_history:
+        prev_payment_date = _parse_iso_date((prior_history[-1] or {}).get("payment_date"))
+    # If no prior saved period is available, infer previous scheduled payment
+    # date from payment frequency.
+    if not prev_payment_date:
+        prev_payment_date = _subtract_months(
+            payment_date,
+            _payment_frequency_months(deal_config.payment_frequency),
+        )
+
+    if prev_payment_date and prev_payment_date < payment_date:
+        actual_days = (payment_date - prev_payment_date).days
+        if actual_days > 0:
+            logger.info(
+                f"Using prior-payment accrual days={actual_days} "
+                f"from {prev_payment_date} to {payment_date}"
+            )
+            return prev_payment_date, accrual_end, actual_days
+
+    # Rule 3: backward-compatible fallback
+    return _compute_accrual_dates(payment_date)
+
+
 def _compute_interest(
     principal: float,
     annual_rate: float,
     days: int,
     convention: str,
+    accrual_start: Optional[date] = None,
+    accrual_end: Optional[date] = None,
 ) -> float:
     """
     Compute interest accrual.
@@ -242,10 +340,29 @@ def _compute_interest(
       actual/360: principal * rate * days / 360
       30/360: principal * rate * 30 / 360
       actual/365: principal * rate * days / 365
+      actual/actual: principal * rate * year_fraction(start, end)
     """
     if principal <= 0 or annual_rate <= 0:
         return 0.0
     convention_lower = (convention or "actual/360").lower()
+    if "actual/actual" in convention_lower or "act/act" in convention_lower:
+        # Act/Act (ISDA-style year fraction):
+        # sum over calendar-year segments of segment_days / (365 or 366)
+        if accrual_start and accrual_end and accrual_end >= accrual_start:
+            start = accrual_start
+            end = accrual_end
+            year_fraction = 0.0
+            current = start
+            while current.year < end.year:
+                seg_end = date(current.year, 12, 31)
+                seg_days = (seg_end - current).days + 1
+                year_fraction += seg_days / (366.0 if calendar.isleap(current.year) else 365.0)
+                current = date(current.year + 1, 1, 1)
+            final_days = (end - current).days + 1
+            year_fraction += final_days / (366.0 if calendar.isleap(end.year) else 365.0)
+            return principal * annual_rate * year_fraction
+        # Fallback if dates are unavailable
+        return principal * annual_rate * days / 365.0
     if "365" in convention_lower:
         return principal * annual_rate * days / 365.0
     elif "30" in convention_lower:
@@ -336,12 +453,27 @@ def _class_day_count(convention: Optional[str], actual_days: int) -> int:
     the period's actual calendar days. Returns the integer that should appear
     in the report's "Accrual Days" column for the class.
     """
-    conv = (convention or "actual/360").lower()
+    conv = _normalize_day_count_convention(convention)
     if "30" in conv and "30/360" in conv:
         return 30
     if conv.startswith("30"):
         return 30
     return actual_days
+
+
+def _normalize_day_count_convention(convention: Optional[str]) -> str:
+    """
+    Canonicalize supported day-count strings so downstream reporting/UI can
+    display the exact method used in calculation.
+    """
+    conv = (convention or "actual/360").strip().lower()
+    if "30/360" in conv or conv.startswith("30"):
+        return "30/360"
+    if "actual/365" in conv or "act/365" in conv or "a/365" in conv or "365" in conv:
+        return "actual/365"
+    if "actual/actual" in conv or "act/act" in conv:
+        return "actual/actual"
+    return "actual/360"
 
 
 def _get_class_rate(cls: CertificateClass, sofr_rate: float, net_wac: float) -> float:
@@ -882,6 +1014,50 @@ def _eval_formula(
         return None
 
 
+def _eval_step_condition(
+    condition: Optional[str],
+    context: Optional[Dict[str, Any]] = None,
+) -> bool:
+    """
+    Evaluate whether a waterfall step should execute.
+
+    Supported condition styles:
+      - empty / "always" / "true"
+      - "trigger_pass"      -> trigger not in effect
+      - "trigger_failure"   -> trigger in effect
+      - arbitrary Python boolean expression using provided context vars
+    """
+    cond = (condition or "").strip()
+    if not cond:
+        return True
+
+    lowered = cond.lower()
+    ctx = context or {}
+    trigger_in_effect = bool(ctx.get("trigger_in_effect"))
+
+    if lowered in {"always", "true"}:
+        return True
+    if lowered in {"false", "never"}:
+        return False
+    if lowered in {"trigger_pass", "pass", "no_trigger"}:
+        return not trigger_in_effect
+    if lowered in {"trigger_failure", "trigger_fail", "trigger_in_effect", "fail"}:
+        return trigger_in_effect
+
+    # Expression mode (restricted eval namespace)
+    try:
+        ns = {
+            **_FORMULA_SAFE_BUILTINS,
+            **ctx,
+        }
+        return bool(eval(cond, {"__builtins__": {}}, ns))  # noqa: S307
+    except Exception as e:
+        logger.warning(
+            f"Step condition eval failed '{cond}': {e}. Treating condition as False."
+        )
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Reserve account lifecycle
 # ---------------------------------------------------------------------------
@@ -1040,6 +1216,7 @@ def _execute_waterfall_steps(
     realized_loss: float = 0.0,
     reserve_balances: Optional[Dict[str, float]] = None,
     reserve_targets: Optional[Dict[str, float]] = None,
+    step_condition_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, Dict[str, float], List[WaterfallTraceStep]]:
     """
     Execute a series of waterfall steps.
@@ -1047,6 +1224,8 @@ def _execute_waterfall_steps(
     When a step has an ``amount_formula`` (LLM-generated Python expression),
     that formula is evaluated to determine the exact amount owed.
     Otherwise falls back to the rule-based logic keyed on ``payment_type``.
+    ``step.condition`` (when provided) is evaluated first; if false, the step
+    is skipped with zero payment.
 
     Returns:
       - remaining_funds after all steps
@@ -1061,6 +1240,21 @@ def _execute_waterfall_steps(
     for step in steps:
         class_name = step.class_name
         ptype = step.payment_type.lower()
+        should_execute = _eval_step_condition(step.condition, step_condition_context)
+
+        if not should_execute:
+            trace.append(WaterfallTraceStep(
+                step=step.step,
+                description=f"{step.description}  [condition: {step.condition} -> skipped]",
+                source_bucket=step.source_bucket,
+                funds_available=available_funds if step.step == 1 else funds,
+                amount_owed=0.0,
+                amount_paid=0.0,
+                funds_remaining=funds,
+                class_name=class_name,
+                payment_type=ptype,
+            ))
+            continue
 
         # ── Amount determination ──────────────────────────────────────────
         # Priority: LLM-generated formula  >  rule-based fallback
@@ -1184,6 +1378,7 @@ def _distribute_interest_remittance(
     sofr_rate: float,
     net_wac: float,
     beginning_balances: Dict[str, float],
+    step_condition_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, List[WaterfallTraceStep]]:
     """
     Distribute the Interest Remittance Amount according to the deal's interest waterfall.
@@ -1213,6 +1408,7 @@ def _distribute_interest_remittance(
             class_beginning_balances=beginning_balances,
             available_funds=funds,
             payment_type="interest",
+            step_condition_context=step_condition_context,
         )
         # Apply payments to class details
         for cd in class_details:
@@ -1274,6 +1470,7 @@ def _distribute_principal_remittance(
     principal_remittance: float,
     beginning_balances: Dict[str, float],
     unpaid_interest: Dict[str, float],
+    step_condition_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, List[WaterfallTraceStep]]:
     """
     Distribute the Principal Remittance Amount according to the deal's principal waterfall.
@@ -1322,6 +1519,7 @@ def _distribute_principal_remittance(
             class_beginning_balances=beginning_balances,
             available_funds=funds,
             payment_type="principal",
+            step_condition_context=step_condition_context,
         )
         # Apply payments
         for cd in class_details:
@@ -1388,6 +1586,7 @@ def _distribute_excess_cashflow(
     excess_cashflow: float,
     beginning_balances: Dict[str, float],
     realized_losses: float,
+    step_condition_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, List[WaterfallTraceStep]]:
     """
     Distribute Monthly Excess Cashflow.
@@ -1418,6 +1617,7 @@ def _distribute_excess_cashflow(
             class_beginning_balances=beginning_balances,
             available_funds=funds,
             payment_type="excess",
+            step_condition_context=step_condition_context,
         )
         for cd in class_details:
             paid = excess_payments.get(cd.class_name, 0.0)
@@ -1737,6 +1937,105 @@ def _evaluate_config_trigger(condition: str, context: Dict[str, Any]) -> bool:
         return False
 
 
+def _evaluate_trigger_state_for_waterfall(
+    deal_config: DealConfig,
+    pool_stats: Dict[str, Any],
+    beginning_balances: Dict[str, float],
+    prior_history: List[Dict],
+    prior_waterfall_result: Optional[Dict],
+) -> Dict[str, Any]:
+    """
+    Evaluate trigger state early so conditional waterfall steps can branch on it.
+
+    Returns a dict with:
+      - trigger_eval_context
+      - action_flags (e.g., CREDIT_SUPPORT_DEPLETION -> bool)
+      - any_trigger_fired (overall trigger-in-effect flag)
+      - baseline metric values used for reporting
+    """
+    realized_losses_current = float(pool_stats.get("total_charge_offs") or 0.0)
+    cumulative_losses = (
+        _prior_top_field(prior_waterfall_result, "cumulative_realized_losses")
+        + realized_losses_current
+    )
+
+    cs_value, cs_fired = _evaluate_credit_support_trigger(
+        deal_config.classes, beginning_balances
+    )
+    cl_value, cl_fired, cl_threshold = _evaluate_cumulative_loss_trigger(
+        deal_config.classes, cumulative_losses
+    )
+    dq_value, dq_fired, dq_threshold = _evaluate_delinquency_trigger(
+        prior_history, pool_stats, beginning_balances
+    )
+
+    trigger_eval_context: Dict[str, Any] = {
+        "subordinate_balance": cs_value,
+        "cumulative_loss_pct": cl_value,
+        "cumulative_losses": cumulative_losses,
+        "delinquency_60plus_pct": dq_value,
+        "pool_balance": float(pool_stats.get("total_beginning_balance") or 0.0),
+    }
+
+    # Evaluate configured trigger conditions (if any)
+    config_triggers_with_condition = [
+        t for t in (deal_config.triggers or []) if t.trigger_condition
+    ]
+    config_trigger_results: List[Tuple[TriggerTest, bool]] = []
+    for ct in config_triggers_with_condition:
+        fired = _evaluate_config_trigger(ct.trigger_condition, trigger_eval_context)
+        config_trigger_results.append((ct, fired))
+
+    config_fired_by_action: Dict[str, bool] = {
+        ct.trigger_action: fired
+        for ct, fired in config_trigger_results
+        if ct.trigger_action
+    }
+
+    cs_fired_final = config_fired_by_action.get("CREDIT_SUPPORT_DEPLETION", cs_fired)
+    cl_fired_final = config_fired_by_action.get("CUMULATIVE_LOSS_TRIGGER", cl_fired)
+    dq_fired_final = config_fired_by_action.get("DELINQUENCY_TRIGGER", dq_fired)
+
+    _KNOWN_ACTIONS = {
+        "CREDIT_SUPPORT_DEPLETION",
+        "CUMULATIVE_LOSS_TRIGGER",
+        "DELINQUENCY_TRIGGER",
+    }
+    other_config_fired = any(
+        fired
+        for ct, fired in config_trigger_results
+        if ct.trigger_action not in _KNOWN_ACTIONS
+    )
+    any_trigger_fired = cs_fired_final or cl_fired_final or dq_fired_final or other_config_fired
+
+    action_flags: Dict[str, bool] = {
+        "CREDIT_SUPPORT_DEPLETION": cs_fired_final,
+        "CUMULATIVE_LOSS_TRIGGER": cl_fired_final,
+        "DELINQUENCY_TRIGGER": dq_fired_final,
+    }
+    # Include any custom action flags too.
+    for ct, fired in config_trigger_results:
+        if ct.trigger_action:
+            action_flags[ct.trigger_action] = fired
+
+    return {
+        "cs_value": cs_value,
+        "cs_fired_final": cs_fired_final,
+        "cl_value": cl_value,
+        "cl_fired_final": cl_fired_final,
+        "cl_threshold": cl_threshold,
+        "dq_value": dq_value,
+        "dq_fired_final": dq_fired_final,
+        "dq_threshold": dq_threshold,
+        "cumulative_losses": cumulative_losses,
+        "trigger_eval_context": trigger_eval_context,
+        "config_trigger_results": config_trigger_results,
+        "other_config_fired": other_config_fired,
+        "any_trigger_fired": any_trigger_fired,
+        "action_flags": action_flags,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main waterfall computation
 # ---------------------------------------------------------------------------
@@ -1781,7 +2080,12 @@ def compute_waterfall(
     computed_at = datetime.utcnow().isoformat()
 
     # ---- 1. Determine accrual period ----
-    accrual_start, accrual_end, days = _compute_accrual_dates(payment_date)
+    accrual_start, accrual_end, days = _resolve_accrual_period(
+        deal_config=deal_config,
+        payment_date=payment_date,
+        prior_waterfall_result=prior_waterfall_result,
+        prior_history=prior_history,
+    )
     accrual_start_str = accrual_start.strftime("%Y-%m-%d")
     accrual_end_str = accrual_end.strftime("%Y-%m-%d")
 
@@ -1824,19 +2128,39 @@ def compute_waterfall(
         else:
             beginning_balances[cls.class_name] = cls.initial_principal
 
+    # ---- 5b. Evaluate trigger state early (for conditional waterfall steps) ----
+    trigger_state = _evaluate_trigger_state_for_waterfall(
+        deal_config=deal_config,
+        pool_stats=pool_stats,
+        beginning_balances=beginning_balances,
+        prior_history=prior_history,
+        prior_waterfall_result=prior_waterfall_result,
+    )
+    step_condition_context: Dict[str, Any] = {
+        **trigger_state["trigger_eval_context"],
+        **trigger_state["action_flags"],
+        "trigger_in_effect": bool(trigger_state["any_trigger_fired"]),
+        "trigger_pass": not bool(trigger_state["any_trigger_fired"]),
+        "trigger_failure": bool(trigger_state["any_trigger_fired"]),
+    }
+
     # ---- 6. Compute pass-through rates and interest due for each class ----
     class_details: List[ClassPaymentSummary] = []
 
     for cls in deal_config.classes:
         rate = _get_class_rate(cls, sofr_rate, net_wac)
         beginning_bal = beginning_balances.get(cls.class_name, cls.initial_principal)
+        class_convention = _normalize_day_count_convention(
+            (cls.accrual_convention or "").strip()
+            or (deal_config.interest_day_count or "actual/360")
+        )
 
-        # Per-class day count: 30/360 → 30 fixed days regardless of calendar,
-        # actual/360 → the period's actual day count. The pool-level `days`
+        # Per-class day count: 30/360 -> 30 fixed days regardless of calendar,
+        # actual/* -> the period's actual day count. The pool-level `days`
         # value (computed from accrual dates above) is used for actual/* and
         # also feeds cash-collection math; only the class-level interest
         # accrual day count switches.
-        class_days = _class_day_count(cls.accrual_convention, days)
+        class_days = _class_day_count(class_convention, days)
 
         # Compute cap carryover for floating rate classes
         # Cap carryover = max(0, rate_if_no_cap - actual_rate) * balance
@@ -1845,11 +2169,23 @@ def compute_waterfall(
             uncapped_rate = sofr_rate + (cls.margin or 0.0)
             if uncapped_rate > rate:
                 cap_carryover_this_period = _compute_interest(
-                    beginning_bal, uncapped_rate - rate, class_days, cls.accrual_convention
+                    beginning_bal,
+                    uncapped_rate - rate,
+                    class_days,
+                    class_convention,
+                    accrual_start=accrual_start,
+                    accrual_end=accrual_end,
                 )
 
         # Interest accrual
-        interest_accrued = _compute_interest(beginning_bal, rate, class_days, cls.accrual_convention)
+        interest_accrued = _compute_interest(
+            beginning_bal,
+            rate,
+            class_days,
+            class_convention,
+            accrual_start=accrual_start,
+            accrual_end=accrual_end,
+        )
 
         # Beginning carryforward (from prior period)
         beginning_carryforward = 0.0
@@ -1887,6 +2223,7 @@ def compute_waterfall(
             accrual_start=accrual_start_str,
             accrual_end=accrual_end_str,
             days_accrued=class_days,
+            day_count_method=class_convention,
             beginning_interest_carryforward=beginning_carryforward,
             interest_accrued=interest_accrued,
             total_interest_due=total_due,
@@ -1998,6 +2335,7 @@ def compute_waterfall(
         sofr_rate=sofr_rate,
         net_wac=net_wac,
         beginning_balances=beginning_balances,
+        step_condition_context=step_condition_context,
     )
 
     # ---- 9. Execute Principal Waterfall ----
@@ -2012,6 +2350,7 @@ def compute_waterfall(
         principal_remittance=principal_remittance,
         beginning_balances=beginning_balances,
         unpaid_interest=unpaid_interest,
+        step_condition_context=step_condition_context,
     )
 
     # ---- 10. Monthly Excess Cashflow ----
@@ -2026,6 +2365,7 @@ def compute_waterfall(
         excess_cashflow=monthly_excess_cashflow,
         beginning_balances=beginning_balances,
         realized_losses=realized_losses,
+        step_condition_context=step_condition_context,
     )
 
     # ---- 11. Update remaining ending principal and factors ----
@@ -2256,18 +2596,20 @@ def compute_waterfall(
         description=f"Pool balance > {deal_config.cleanup_call_pct*100:.0f}% of original balance",
     ))
 
-    # Real evaluation of the three indenture triggers. ``fired`` = True means
-    # the trigger condition is satisfied (the trigger event is in effect) and
-    # the principal waterfall flips to fully sequential.
-    cum_realized = collateral_realized_loss.realized_loss_cumulative
-
-    cs_value, cs_fired = _evaluate_credit_support_trigger(deal_config.classes, beginning_balances)
-    cl_value, cl_fired, cl_threshold = _evaluate_cumulative_loss_trigger(
-        deal_config.classes, cum_realized
-    )
-    dq_value, dq_fired, dq_threshold = _evaluate_delinquency_trigger(
-        prior_history, pool_stats, beginning_balances
-    )
+    # Reuse pre-waterfall trigger evaluation so:
+    #  1) step conditions and reporting are aligned
+    #  2) we avoid duplicate trigger computations
+    cum_realized = trigger_state["cumulative_losses"]
+    cs_value = trigger_state["cs_value"]
+    cl_value = trigger_state["cl_value"]
+    cl_threshold = trigger_state["cl_threshold"]
+    dq_value = trigger_state["dq_value"]
+    dq_threshold = trigger_state["dq_threshold"]
+    cs_fired_final = trigger_state["cs_fired_final"]
+    cl_fired_final = trigger_state["cl_fired_final"]
+    dq_fired_final = trigger_state["dq_fired_final"]
+    config_trigger_results = trigger_state["config_trigger_results"]
+    other_config_fired = trigger_state["other_config_fired"]
 
     # Headroom: how far from breach (positive = headroom). For
     # Credit Support Depletion, breach is at 0 and current_value is a
@@ -2279,49 +2621,6 @@ def compute_waterfall(
     cs_margin = (cs_value / sub_orig) if sub_orig > 0 else 0.0
     cl_margin = max(0.0, (cl_threshold - cl_value) / cl_threshold) if cl_threshold > 0 else 0.0
     dq_margin = max(0.0, (dq_threshold - dq_value) / dq_threshold) if dq_threshold > 0 else 0.0
-
-    # Shared eval context for config-based trigger conditions.
-    # Allows extracted Python expressions to reference these named variables.
-    trigger_eval_context: Dict[str, Any] = {
-        "subordinate_balance": cs_value,
-        "cumulative_loss_pct": cl_value,
-        "cumulative_losses": cum_realized,
-        "delinquency_60plus_pct": dq_value,
-        "pool_balance": pool_stats["total_beginning_balance"],
-    }
-
-    # Evaluate config triggers that have an extracted trigger_condition.
-    # The trigger_action name maps the result back to a known baseline flag or
-    # introduces a new named flag.
-    config_triggers_with_condition = [
-        t for t in (deal_config.triggers or []) if t.trigger_condition
-    ]
-
-    config_trigger_results: List[tuple] = []  # (trigger, fired)
-    for ct in config_triggers_with_condition:
-        fired = _evaluate_config_trigger(ct.trigger_condition, trigger_eval_context)
-        config_trigger_results.append((ct, fired))
-
-    # Build a dict from action-name → fired so config results can override the
-    # three hardcoded baseline evaluations when the action name matches.
-    _KNOWN_ACTIONS = {"CREDIT_SUPPORT_DEPLETION", "CUMULATIVE_LOSS_TRIGGER", "DELINQUENCY_TRIGGER"}
-    config_fired_by_action: Dict[str, bool] = {
-        ct.trigger_action: fired
-        for ct, fired in config_trigger_results
-        if ct.trigger_action
-    }
-
-    # Override baseline fired status with config-condition results when available.
-    cs_fired_final = config_fired_by_action.get("CREDIT_SUPPORT_DEPLETION", cs_fired)
-    cl_fired_final = config_fired_by_action.get("CUMULATIVE_LOSS_TRIGGER", cl_fired)
-    dq_fired_final = config_fired_by_action.get("DELINQUENCY_TRIGGER", dq_fired)
-
-    # Any config trigger whose action is not one of the three baseline names.
-    other_config_fired = any(
-        fired
-        for ct, fired in config_trigger_results
-        if ct.trigger_action not in _KNOWN_ACTIONS
-    )
 
     # EventTest entries — use final (possibly overridden) fired status.
     events.extend([

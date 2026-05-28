@@ -95,6 +95,7 @@ export interface DealConfig {
   benchmark?: string;
   benchmark_tenor?: string;
   interest_day_count?: string;
+  accrual_days?: number;
   default_sofr_rate?: number;
   cleanup_call_pct: number;
   classes: CertificateClass[];
@@ -143,6 +144,7 @@ export interface ClassPaymentSummary {
   accrual_start?: string;
   accrual_end?: string;
   days_accrued?: number;
+  day_count_method?: string;
   interest_accrued: number;
   total_interest_due: number;
   interest_paid: number;

@@ -36,7 +36,7 @@ class CertificateClass(BaseModel):
     rate_floor: float = Field(0.0, description="Minimum pass-through rate (usually 0%)")
 
     # Interest accrual
-    accrual_convention: str = Field("30/360", description="Interest accrual: actual/360, 30/360, actual/365")
+    accrual_convention: str = Field("30/360", description="Interest accrual: 30/360, actual/360, actual/365, actual/actual")
     accrual_start_day: int = Field(20, description="Day of month accrual starts (20th or 1st)")
 
     # Dates
@@ -85,7 +85,13 @@ class WaterfallStep(BaseModel):
     class_name: Optional[str] = Field(None, description="Target certificate class")
     payment_type: str = Field(..., description="interest, principal, reserve, excess, fee, expense")
     source_bucket: str = Field("available_funds", description="Source: available_funds, interest_remittance, principal_remittance, excess_cashflow, reserve")
-    condition: Optional[str] = Field(None, description="Condition for this step (e.g., trigger_failure, always)")
+    condition: Optional[str] = Field(
+        None,
+        description=(
+            "Execution condition for this step. Examples: always, trigger_pass, "
+            "trigger_failure, or a Python boolean expression."
+        ),
+    )
     amount_formula: Optional[str] = Field(None, description="Formula for computing amount")
     concurrent_with: Optional[List[str]] = Field(None, description="Steps that run concurrently (pro-rata)")
     reserve_account: Optional[str] = Field(None, description="Reserve account name if depositing")
@@ -189,6 +195,16 @@ class DealConfig(BaseModel):
     benchmark_tenor: Optional[str] = Field("1M", description="1M, 3M")
     default_sofr_rate: Optional[float] = Field(None, description="Default SOFR rate if not provided at runtime")
     interest_day_count: Optional[str] = Field("actual/360", description="Pool-level day count convention")
+    accrual_days: Optional[int] = Field(
+        None,
+        ge=1,
+        le=366,
+        description=(
+            "Optional first-period accrual day override. If set and the current "
+            "payment date equals first_payment_date, waterfall interest uses this "
+            "value for actual/360 accrual."
+        ),
+    )
 
     @field_validator("benchmark", mode="before")
     @classmethod

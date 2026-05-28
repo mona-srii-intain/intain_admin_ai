@@ -102,6 +102,8 @@ def _fmt_int(val: Optional[float]) -> str:
 def _day_count_label(convention: Optional[str]) -> str:
     """Display label for Section 1(b) Day Count Method column."""
     conv = (convention or "actual/360").lower()
+    if "actual/actual" in conv or "act/act" in conv:
+        return "Act/Act"
     if "30/360" in conv or conv.startswith("30"):
         return "30/360"
     if "365" in conv:
@@ -180,9 +182,7 @@ def build_json_report(result: WaterfallResult) -> Dict[str, Any]:
                 "accrual_start": cd.accrual_start,
                 "accrual_end": cd.accrual_end,
                 "days_accrued": cd.days_accrued,
-                "day_count_method": _day_count_label(
-                    next((c["accrual_convention"] for c in []), None)
-                ),
+                "day_count_method": _day_count_label(cd.day_count_method),
                 "interest_rate": cd.interest_rate,
                 "prior_unpaid_interest": cd.beginning_interest_carryforward,
                 "optimal_interest": cd.interest_accrued,

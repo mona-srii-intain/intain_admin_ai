@@ -22,6 +22,17 @@
   * {
     @apply box-border;
   }
+
+  /* Hide browser spinner controls for numeric inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 @layer components {
@@ -95,7 +106,7 @@
   }
 
   .stat-card {
-    @apply card flex flex-col gap-1;
+    @apply card p-4 sm:p-5 flex flex-col gap-1 min-w-0 overflow-hidden;
   }
 
   .stat-label {
@@ -103,7 +114,7 @@
   }
 
   .stat-value {
-    @apply text-2xl font-bold text-gray-900;
+    @apply font-bold text-gray-900 leading-tight break-all min-w-0;
   }
 
   .section-title {

@@ -16,7 +16,7 @@ export const extractDeal = (file: File, dealId: string, overwrite = false) => {
   form.append("overwrite", String(overwrite));
   return api.post("/api/deals/extract", form, {
     headers: { "Content-Type": "multipart/form-data" },
-    timeout: 300_000,
+    timeout: 600_000,
   }).then((r) => r.data);
 };
 

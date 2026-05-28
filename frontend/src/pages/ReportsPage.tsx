@@ -442,7 +442,7 @@ export default function ReportsPage() {
                     rows={(report.class_details ?? []).map((cd) => [
                       cd.class_name,
                       cd.days_accrued,
-                      (cd.days_accrued === 30 && report.days_accrued !== 30) ? "30/360" : "Act/360",
+                      cd.day_count_method || ((cd.days_accrued === 30 && report.days_accrued !== 30) ? "30/360" : "actual/360"),
                       fmtPct(cd.interest_rate),
                       fmtUSD(cd.beginning_interest_carryforward),
                       fmtUSD(cd.interest_accrued),

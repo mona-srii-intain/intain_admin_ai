@@ -91,6 +91,7 @@ export function valuesForSection(uiSec: UiSectionKey, cfg: DealConfig): string[]
     push(cfg.benchmark);
     push(cfg.benchmark_tenor);
     push(cfg.interest_day_count);
+    if (cfg.accrual_days) numberVariants(cfg.accrual_days).forEach(push);
     for (const d of [cfg.closing_date, cfg.cut_off_date, cfg.first_payment_date, cfg.legal_maturity_date, cfg.pricing_date, cfg.revolving_period_end_date]) {
       if (d) dateVariants(d).forEach(push);
     }
