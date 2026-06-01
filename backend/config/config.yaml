@@ -10,8 +10,8 @@ connections:
     private_key_source: 'vault'
     vault:
       addr: 'https://vault3.intainabs.com'
-      role_id_env: 'ROLE_ID'
-      secret_id_env: 'SECRET_ID'
+      role_id: bd69c5e3-ffcb-9c5b-c418-771cde1e7476
+      secret_id: 6dad5a57-9cc1-0c75-9813-70d0926d081c
       sign_path: '/v1/Snowflake/data/Credentials'
       secret_field: 'file.p8'
   ia_uat:
@@ -25,7 +25,7 @@ connections:
       private_key_source: 'vault'
       vault:
         addr: 'https://vault3.intainabs.com'
-        role_id_env: 'ROLE_ID'
-        secret_id_env: 'SECRET_ID'
+        role_id: bd69c5e3-ffcb-9c5b-c418-771cde1e7476
+        secret_id: 6dad5a57-9cc1-0c75-9813-70d0926d081c
         sign_path: '/v1/Snowflake/data/Credentials'
         secret_field: 'ida_write_user_key'

@@ -4,6 +4,7 @@ import logging
 import os
 import json
 import base64
+import re
 import urllib.request
 import urllib.error
 from pathlib import Path
@@ -19,6 +20,14 @@ _active_pool_conn_key = None
 logger = logging.getLogger("uvicorn.error")
 
 _env_loaded = False
+_ENV_VAR_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def _cfg_str(value) -> str:
+    """Normalize config/env values into trimmed strings."""
+    if value is None:
+        return ""
+    return str(value).strip().strip('"').strip("'")
 
 
 def _load_env_from_backend_dir_once() -> None:
@@ -153,31 +162,57 @@ def load_private_key_from_vault(vault_cfg: dict) -> bytes:
       - sign_path: Vault secret read path (e.g. /v1/Snowflake/data/Credentials)
       - secret_field (optional): which field inside the secret contains the key
     """
-    addr = (vault_cfg.get("addr") or os.getenv("VAULT_ADDR") or "").strip()
+    addr = _cfg_str(vault_cfg.get("addr") or os.getenv("VAULT_ADDR"))
     if not addr:
         raise RuntimeError("Vault is enabled but Vault address is missing (vault.addr or VAULT_ADDR)")
 
-    role_id = (vault_cfg.get("role_id") or "").strip()
-    secret_id = (vault_cfg.get("secret_id") or "").strip()
+    role_id = _cfg_str(vault_cfg.get("role_id"))
+    secret_id = _cfg_str(vault_cfg.get("secret_id"))
 
-    role_id_env = (vault_cfg.get("role_id_env") or "ROLE_ID").strip()
-    secret_id_env = (vault_cfg.get("secret_id_env") or "SECRET_ID").strip()
+    role_id_env = _cfg_str(vault_cfg.get("role_id_env")) or "ROLE_ID"
+    secret_id_env = _cfg_str(vault_cfg.get("secret_id_env")) or "SECRET_ID"
     if not role_id:
-        role_id = (os.getenv(role_id_env) or "").strip()
+        role_id = _cfg_str(os.getenv(role_id_env))
+        # Backward compatibility: some configs accidentally place literal values
+        # in role_id_env instead of role_id.
+        if (
+            not role_id
+            and "role_id_env" in vault_cfg
+            and role_id_env
+            and not _ENV_VAR_NAME_RE.match(role_id_env)
+        ):
+            logger.warning(
+                "Vault config key 'role_id_env' appears to contain a literal role_id. "
+                "Prefer using 'vault.role_id'."
+            )
+            role_id = role_id_env
     if not secret_id:
-        secret_id = (os.getenv(secret_id_env) or "").strip()
+        secret_id = _cfg_str(os.getenv(secret_id_env))
+        # Backward compatibility: some configs accidentally place literal values
+        # in secret_id_env instead of secret_id.
+        if (
+            not secret_id
+            and "secret_id_env" in vault_cfg
+            and secret_id_env
+            and not _ENV_VAR_NAME_RE.match(secret_id_env)
+        ):
+            logger.warning(
+                "Vault config key 'secret_id_env' appears to contain a literal secret_id. "
+                "Prefer using 'vault.secret_id'."
+            )
+            secret_id = secret_id_env
 
     if not role_id or not secret_id:
         raise RuntimeError(
             "Vault is enabled but role_id/secret_id are missing. "
-            f"Set env vars {role_id_env} and {secret_id_env}, or set vault.role_id / vault.secret_id in config."
+            f"Set vault.role_id and vault.secret_id in config, or set env vars {role_id_env} and {secret_id_env}."
         )
 
-    sign_path = (vault_cfg.get("sign_path") or os.getenv("SIGN_PATH") or "").strip()
+    sign_path = _cfg_str(vault_cfg.get("sign_path") or os.getenv("SIGN_PATH"))
     if not sign_path:
         raise RuntimeError("Vault is enabled but sign_path is missing (vault.sign_path or SIGN_PATH)")
 
-    secret_field = (vault_cfg.get("secret_field") or "").strip()
+    secret_field = _cfg_str(vault_cfg.get("secret_field"))
 
     logger.info("Vault: preparing to fetch Snowflake private key")
     token = _vault_login_approle(addr, role_id, secret_id)
@@ -306,7 +341,21 @@ async def create_pool(platform: str | None = None):
         # Load private key for JWT authentication (Vault or file fallback)
         private_key_source = (conn.get("private_key_source") or "").strip().lower()
         if private_key_source == "vault" or isinstance(conn.get("vault"), dict):
-            private_key = load_private_key_from_vault(conn.get("vault") or {})
+            vault_cfg = dict(conn.get("vault") or {})
+            # Backward compatibility: allow Vault fields directly under the
+            # connection block (outside `vault:`).
+            for key in (
+                "addr",
+                "role_id",
+                "secret_id",
+                "role_id_env",
+                "secret_id_env",
+                "sign_path",
+                "secret_field",
+            ):
+                if key not in vault_cfg and key in conn:
+                    vault_cfg[key] = conn.get(key)
+            private_key = load_private_key_from_vault(vault_cfg)
         else:
             raise RuntimeError(
                 "Snowflake private key is configured as Vault-only. "

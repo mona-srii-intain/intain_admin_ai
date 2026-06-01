@@ -17,6 +17,7 @@ import os
 from contextlib import asynccontextmanager
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+import yaml
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -66,6 +67,42 @@ for _name in ("watchfiles", "watchfiles.main"):
     logging.getLogger(_name).setLevel(logging.WARNING)
 
 logger = logging.getLogger("uvicorn.error")
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _vault_approle_configured_in_yaml() -> bool:
+    """Return True if any configured Snowflake vault block has direct role/secret IDs."""
+    cfg_path = Path(__file__).parent / "config" / "config.yaml"
+    if not cfg_path.exists():
+        return False
+    try:
+        with cfg_path.open("r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception:
+        return False
+
+    connections = (cfg.get("connections") or {})
+    if not isinstance(connections, dict):
+        return False
+
+    for conn in connections.values():
+        if not isinstance(conn, dict):
+            continue
+        role_id_root = str(conn.get("role_id") or "").strip()
+        secret_id_root = str(conn.get("secret_id") or "").strip()
+        if role_id_root and secret_id_root:
+            return True
+        vault_cfg = conn.get("vault") or {}
+        if not isinstance(vault_cfg, dict):
+            continue
+        role_id = str(vault_cfg.get("role_id") or "").strip()
+        secret_id = str(vault_cfg.get("secret_id") or "").strip()
+        if role_id and secret_id:
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +223,9 @@ async def health_check():
     """Detailed health check."""
     from config.database import global_pool
 
+    env_has_approle = bool(os.getenv("ROLE_ID")) and bool(os.getenv("SECRET_ID"))
+    yaml_has_approle = _vault_approle_configured_in_yaml()
+
     db_status = "disconnected"
     if global_pool and not getattr(global_pool, "is_closed", lambda: True)():
         db_status = "connected"
@@ -198,8 +238,8 @@ async def health_check():
         "environment": {
             "azure_openai_endpoint": bool(os.getenv("AZURE_OPENAI_ENDPOINT")),
             "azure_openai_key": bool(os.getenv("AZURE_OPENAI_API_KEY")),
-            "role_id": bool(os.getenv("ROLE_ID")),
-            "secret_id": bool(os.getenv("SECRET_ID")),
+            "role_id": env_has_approle or yaml_has_approle,
+            "secret_id": env_has_approle or yaml_has_approle,
         },
     }
 

@@ -55,14 +55,14 @@
   "benchmark_tenor": "1M",
   "default_sofr_rate": null,
   "interest_day_count": "actual/360",
-  "accrual_days": 20,
+  "accrual_days": null,
   "classes": [
     {
       "class_name": "A-1",
       "cusip": "46656UAA1",
       "isin": null,
       "type": "Senior",
-      "sub_type": "Floater/Pro Rata",
+      "sub_type": "Floater",
       "is_notional": false,
       "is_exchangeable": false,
       "exchange_group": null,
@@ -95,7 +95,7 @@
       "cusip": "46656UAB9",
       "isin": null,
       "type": "Mezzanine",
-      "sub_type": "Floater/Pro Rata",
+      "sub_type": "Floater",
       "is_notional": false,
       "is_exchangeable": false,
       "exchange_group": null,
@@ -128,7 +128,7 @@
       "cusip": "46656UAC7",
       "isin": null,
       "type": "Mezzanine",
-      "sub_type": "Floater/Pro Rata",
+      "sub_type": "Floater",
       "is_notional": false,
       "is_exchangeable": false,
       "exchange_group": null,
@@ -161,7 +161,7 @@
       "cusip": "46656UAD5",
       "isin": null,
       "type": "Mezzanine",
-      "sub_type": "Floater/Pro Rata",
+      "sub_type": "Floater",
       "is_notional": false,
       "is_exchangeable": false,
       "exchange_group": null,
@@ -194,10 +194,10 @@
       "cusip": "46656UAE3",
       "isin": null,
       "type": "Subordinate",
-      "sub_type": "Floater/Depositable",
+      "sub_type": "Floater",
       "is_notional": false,
-      "is_exchangeable": true,
-      "exchange_group": "BX",
+      "is_exchangeable": false,
+      "exchange_group": null,
       "is_residual": false,
       "initial_principal": 6057000.0,
       "current_principal": null,
@@ -227,10 +227,10 @@
       "cusip": "46656UAF0",
       "isin": null,
       "type": "Subordinate",
-      "sub_type": "Floater/Depositable",
+      "sub_type": "Floater",
       "is_notional": false,
-      "is_exchangeable": true,
-      "exchange_group": "BX",
+      "is_exchangeable": false,
+      "exchange_group": null,
       "is_residual": false,
       "initial_principal": 3449000.0,
       "current_principal": null,
@@ -260,10 +260,10 @@
       "cusip": "46656UAG8",
       "isin": null,
       "type": "Subordinate",
-      "sub_type": "Floater/Depositable",
+      "sub_type": "Floater",
       "is_notional": false,
-      "is_exchangeable": true,
-      "exchange_group": "BX",
+      "is_exchangeable": false,
+      "exchange_group": null,
       "is_residual": false,
       "initial_principal": 4473000.0,
       "current_principal": null,
@@ -293,15 +293,15 @@
       "cusip": "46656UAH6",
       "isin": null,
       "type": "Subordinate",
-      "sub_type": "Principal Only/Depositable",
+      "sub_type": "Principal Only",
       "is_notional": false,
-      "is_exchangeable": true,
-      "exchange_group": "BX",
+      "is_exchangeable": false,
+      "exchange_group": null,
       "is_residual": false,
       "initial_principal": 7456076.0,
       "current_principal": null,
       "interest_rate_type": "principal_only",
-      "fixed_rate": 0.0,
+      "fixed_rate": null,
       "margin": 0.0,
       "benchmark": null,
       "benchmark_tenor": null,
@@ -326,7 +326,7 @@
       "cusip": "46656UAJ2",
       "isin": null,
       "type": "Exchangeable",
-      "sub_type": "Exchangeable",
+      "sub_type": null,
       "is_notional": false,
       "is_exchangeable": true,
       "exchange_group": "BX",
@@ -344,8 +344,8 @@
       "accrual_start_day": 20,
       "expected_final_date": "2053-06",
       "final_scheduled_date": "2053-11",
-      "interest_priority": 0,
-      "principal_priority": 0,
+      "interest_priority": 9,
+      "principal_priority": 9,
       "principal_method": "None",
       "fitch_rating": null,
       "moodys_rating": null,
@@ -377,7 +377,7 @@
       "accrual_start_day": 20,
       "expected_final_date": "2053-05",
       "final_scheduled_date": "2053-11",
-      "interest_priority": 0,
+      "interest_priority": 10,
       "principal_priority": 0,
       "principal_method": "None",
       "fitch_rating": null,
@@ -392,10 +392,10 @@
       "cusip": "46656UAL7",
       "isin": null,
       "type": "Subordinate",
-      "sub_type": "Monthly Excess Cashflow/Depositable",
+      "sub_type": "Monthly Excess Cashflow",
       "is_notional": true,
-      "is_exchangeable": true,
-      "exchange_group": "BX",
+      "is_exchangeable": false,
+      "exchange_group": null,
       "is_residual": false,
       "initial_principal": 186391076.0,
       "current_principal": null,
@@ -410,7 +410,7 @@
       "accrual_start_day": 20,
       "expected_final_date": "2053-06",
       "final_scheduled_date": "2053-11",
-      "interest_priority": 0,
+      "interest_priority": 11,
       "principal_priority": 0,
       "principal_method": "None",
       "fitch_rating": null,
@@ -456,7 +456,7 @@
   ],
   "fees": [
     {
-      "fee_name": "Servicing Fee - non-SLS Serviced Mortgage Loans",
+      "fee_name": "Servicing Fee - Non-SLS Serviced Mortgage Loans",
       "fee_rate": 0.005,
       "fixed_amount": null,
       "fee_type": "percentage",
@@ -473,7 +473,7 @@
     {
       "fee_name": "Servicing Fee - SLS Serviced Mortgage Loans",
       "fee_rate": null,
-      "fixed_amount": null,
+      "fixed_amount": 9.0,
       "fee_type": "fixed",
       "priority": 2,
       "fee_cap": null,
@@ -546,7 +546,7 @@
       "shortfall_carried": true
     },
     {
-      "fee_name": "Participation Owner Trustee / Participation Registrar Fee",
+      "fee_name": "Participation Owner Trustee/Participation Registrar Fee",
       "fee_rate": null,
       "fixed_amount": null,
       "fee_type": "fixed",
@@ -556,7 +556,7 @@
       "servicer_name": null,
       "category": "fee",
       "paid_from": "interest_remittance",
-      "payee": "Participation Owner Trustee / Participation Registrar",
+      "payee": "Participation Owner Trustee/Participation Registrar",
       "accrues": true,
       "shortfall_carried": true
     },
@@ -576,7 +576,7 @@
       "shortfall_carried": true
     },
     {
-      "fee_name": "Trust Expenses under Securities Administrator / Trustee Annual Expense Cap",
+      "fee_name": "Trust Expenses",
       "fee_rate": null,
       "fixed_amount": null,
       "fee_type": "fixed",
@@ -586,7 +586,22 @@
       "servicer_name": null,
       "category": "expense",
       "paid_from": "interest_remittance",
-      "payee": "Applicable trust expense payees",
+      "payee": "Trust Expense Payees",
+      "accrues": true,
+      "shortfall_carried": true
+    },
+    {
+      "fee_name": "Securities Administrator/Trustee Annual Expense Cap",
+      "fee_rate": null,
+      "fixed_amount": null,
+      "fee_type": "fixed",
+      "priority": 10,
+      "fee_cap": null,
+      "applies_to": "issuing_entity",
+      "servicer_name": null,
+      "category": "expense",
+      "paid_from": "interest_remittance",
+      "payee": "Trust Expense Payees",
       "accrues": true,
       "shortfall_carried": true
     }
@@ -595,7 +610,7 @@
   "interest_waterfall": [
     {
       "step": 1,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class A-1 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class A-1 Certificates",
       "class_name": "A-1",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -606,7 +621,7 @@
     },
     {
       "step": 2,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-1 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-1 Certificates",
       "class_name": "M-1",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -617,7 +632,7 @@
     },
     {
       "step": 3,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-2 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-2 Certificates",
       "class_name": "M-2",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -628,7 +643,7 @@
     },
     {
       "step": 4,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-3 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-3 Certificates",
       "class_name": "M-3",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -639,7 +654,7 @@
     },
     {
       "step": 5,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-1 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-1 Certificates",
       "class_name": "B-1",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -650,7 +665,7 @@
     },
     {
       "step": 6,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-2 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-2 Certificates",
       "class_name": "B-2",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -661,7 +676,7 @@
     },
     {
       "step": 7,
-      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-3 Certificates.",
+      "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-3 Certificates",
       "class_name": "B-3",
       "payment_type": "interest",
       "source_bucket": "interest_remittance",
@@ -672,7 +687,7 @@
     },
     {
       "step": 8,
-      "description": "Any remaining Interest Remittance Amount becomes part of Monthly Excess Cashflow.",
+      "description": "Any remaining Interest Remittance Amount becomes part of Monthly Excess Cashflow",
       "class_name": null,
       "payment_type": "excess",
       "source_bucket": "interest_remittance",
@@ -685,7 +700,7 @@
   "principal_waterfall": [
     {
       "step": 1,
-      "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class A-1 Certificates until their Class Principal Amount is reduced to zero.",
+      "description": "Pay principal to the Class A-1 Certificates, pro rata with the Class M-1, Class M-2 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
       "class_name": "A-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -700,7 +715,7 @@
     },
     {
       "step": 1,
-      "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-1 Certificates until their Class Principal Amount is reduced to zero.",
+      "description": "Pay principal to the Class M-1 Certificates, pro rata with the Class A-1, Class M-2 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
       "class_name": "M-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -715,7 +730,7 @@
     },
     {
       "step": 1,
-      "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-2 Certificates until their Class Principal Amount is reduced to zero.",
+      "description": "Pay principal to the Class M-2 Certificates, pro rata with the Class A-1, Class M-1 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
       "class_name": "M-2",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -730,7 +745,7 @@
     },
     {
       "step": 1,
-      "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-3 Certificates until their Class Principal Amount is reduced to zero.",
+      "description": "Pay principal to the Class M-3 Certificates, pro rata with the Class A-1, Class M-1 and Class M-2 Certificates, until its Class Principal Amount is reduced to zero",
       "class_name": "M-3",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -745,7 +760,7 @@
     },
     {
       "step": 1,
-      "description": "Pay principal to the Class A-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class A-1 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "A-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -756,7 +771,7 @@
     },
     {
       "step": 2,
-      "description": "Pay principal to the Class B-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-1 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -767,7 +782,7 @@
     },
     {
       "step": 2,
-      "description": "Pay principal to the Class M-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class M-1 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "M-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -778,7 +793,7 @@
     },
     {
       "step": 3,
-      "description": "Pay principal to the Class B-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-2 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-2",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -789,7 +804,7 @@
     },
     {
       "step": 3,
-      "description": "Pay principal to the Class M-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class M-2 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "M-2",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -800,7 +815,7 @@
     },
     {
       "step": 4,
-      "description": "Pay principal to the Class B-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-3 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-3",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -811,7 +826,7 @@
     },
     {
       "step": 4,
-      "description": "Pay principal to the Class M-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class M-3 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "M-3",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -822,7 +837,7 @@
     },
     {
       "step": 5,
-      "description": "Pay principal to the Class B-4 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-4 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-4",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -833,7 +848,7 @@
     },
     {
       "step": 5,
-      "description": "Pay principal to the Class B-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-1 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-1",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -844,7 +859,7 @@
     },
     {
       "step": 6,
-      "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow.",
+      "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow",
       "class_name": null,
       "payment_type": "excess",
       "source_bucket": "principal_remittance",
@@ -855,7 +870,7 @@
     },
     {
       "step": 6,
-      "description": "Pay principal to the Class B-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-2 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-2",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -866,7 +881,7 @@
     },
     {
       "step": 7,
-      "description": "Pay principal to the Class B-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-3 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-3",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -877,7 +892,7 @@
     },
     {
       "step": 8,
-      "description": "Pay principal to the Class B-4 Certificates until the Class Principal Amount thereof is reduced to zero.",
+      "description": "Pay principal to the Class B-4 Certificates until its Class Principal Amount is reduced to zero",
       "class_name": "B-4",
       "payment_type": "principal",
       "source_bucket": "principal_remittance",
@@ -888,7 +903,7 @@
     },
     {
       "step": 9,
-      "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow.",
+      "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow",
       "class_name": null,
       "payment_type": "excess",
       "source_bucket": "principal_remittance",
@@ -901,7 +916,7 @@
   "excess_cashflow_waterfall": [
     {
       "step": 1,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class A-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class A-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "A-1",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -911,8 +926,8 @@
       "reserve_account": null
     },
     {
-      "step": 2,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "M-1",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -922,8 +937,8 @@
       "reserve_account": null
     },
     {
-      "step": 3,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-2 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-2 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "M-2",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -933,8 +948,8 @@
       "reserve_account": null
     },
     {
-      "step": 4,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-3 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-3 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "M-3",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -944,8 +959,8 @@
       "reserve_account": null
     },
     {
-      "step": 5,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "B-1",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -955,8 +970,8 @@
       "reserve_account": null
     },
     {
-      "step": 6,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-2 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-2 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "B-2",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -966,8 +981,8 @@
       "reserve_account": null
     },
     {
-      "step": 7,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-3 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-3 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "B-3",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -977,8 +992,8 @@
       "reserve_account": null
     },
     {
-      "step": 8,
-      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-4 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+      "step": 1,
+      "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-4 Certificates in reduction of its Class Principal Amount until reduced to zero",
       "class_name": "B-4",
       "payment_type": "principal",
       "source_bucket": "excess_cashflow",
@@ -988,8 +1003,8 @@
       "reserve_account": null
     },
     {
-      "step": 9,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class A-1 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class A-1 Certificates",
       "class_name": "A-1",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -999,8 +1014,8 @@
       "reserve_account": null
     },
     {
-      "step": 10,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-1 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-1 Certificates",
       "class_name": "M-1",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -1010,8 +1025,8 @@
       "reserve_account": null
     },
     {
-      "step": 11,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-2 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-2 Certificates",
       "class_name": "M-2",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -1021,8 +1036,8 @@
       "reserve_account": null
     },
     {
-      "step": 12,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-3 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-3 Certificates",
       "class_name": "M-3",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -1032,8 +1047,8 @@
       "reserve_account": null
     },
     {
-      "step": 13,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-1 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-1 Certificates",
       "class_name": "B-1",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -1043,8 +1058,8 @@
       "reserve_account": null
     },
     {
-      "step": 14,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-2 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-2 Certificates",
       "class_name": "B-2",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
@@ -1054,20 +1069,9 @@
       "reserve_account": null
     },
     {
-      "step": 15,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-3 Certificates.",
+      "step": 2,
+      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-3 Certificates",
       "class_name": "B-3",
-      "payment_type": "loss_reimbursement",
-      "source_bucket": "excess_cashflow",
-      "condition": "always",
-      "amount_formula": "available_funds",
-      "concurrent_with": null,
-      "reserve_account": null
-    },
-    {
-      "step": 16,
-      "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-4 Certificates.",
-      "class_name": "B-4",
       "payment_type": "loss_reimbursement",
       "source_bucket": "excess_cashflow",
       "condition": "always",
@@ -1083,8 +1087,8 @@
       "initial_balance": 0.0,
       "target_amount": null,
       "target_formula": null,
-      "funded_from": "Monthly excess cashflow otherwise distributable to the Class X Certificates.",
-      "released_to": "Sequentially to the Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 Certificates, in that order, to pay unpaid cap carryover amounts.",
+      "funded_from": "Monthly excess cashflow otherwise distributable to the Class X Certificates",
+      "released_to": "Sequentially to Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 for unpaid cap carryover amounts",
       "release_condition": null,
       "release_formula": null,
       "floor": 0.0,
@@ -1097,8 +1101,8 @@
       "initial_balance": 0.0,
       "target_amount": null,
       "target_formula": null,
-      "funded_from": "Any remaining monthly excess cashflow after prior monthly excess cashflow priorities, as provided in the securitization sale agreement.",
-      "released_to": "As provided in the securitization sale agreement.",
+      "funded_from": "Any remaining monthly excess cashflow after payments for realized losses, certificate writedown reimbursements, cap carryover amounts, Class X distribution amount and unpaid trust expenses",
+      "released_to": "As provided in the securitization sale agreement",
       "release_condition": null,
       "release_formula": null,
       "floor": 0.0,
@@ -1110,9 +1114,9 @@
     {
       "test_name": "Credit Support Depletion Event",
       "test_type": "ce",
-      "description": "A trigger event is in effect on the first distribution date on which the aggregate class principal amount of the subordinate certificates has been reduced to zero, prior to any distributions or allocations on that distribution date.",
+      "description": "A trigger event occurs if the aggregate class principal amount of the subordinate certificates has been reduced to zero prior to distributions or allocations on the distribution date.",
       "threshold": 0.0,
-      "operator": "equals",
+      "operator": "less_than_or_equal",
       "numerator_components": [],
       "denominator_components": [],
       "trigger_condition": "subordinate_balance == 0",
@@ -1120,8 +1124,8 @@
     },
     {
       "test_name": "Cumulative Loss Trigger Event",
-      "test_type": "ce",
-      "description": "A trigger event occurs if aggregate realized losses attributable to the 23-HE1 PC since the cut-off date through the end of the related monthly period, divided by the aggregate certificate principal amount of all certificates other than Class A-1 as of the last day of the related monthly period, exceeds 5%.",
+      "test_type": "other",
+      "description": "A trigger event occurs if aggregate realized losses attributable to the 23-HE1 PC since the cut-off date through the end of the related monthly period, divided by the aggregate certificate principal amount of all certificates other than Class A-1, exceeds 5%.",
       "threshold": 0.05,
       "operator": "greater_than",
       "numerator_components": [],
@@ -1132,7 +1136,7 @@
     {
       "test_name": "Delinquency Trigger Event",
       "test_type": "delinquency",
-      "description": "A trigger event occurs if the six-month average of the monthly percentage of HELOC-related mortgage loans that are 60 days or more delinquent under the MBA delinquency methodology, including loans in foreclosure, REO or bankruptcy status but excluding charged-off loans and loans subject to a forbearance plan, divided by the aggregate certificate principal amount of all certificates other than Class A-1 as of the last day of the related monthly period, exceeds 5%.",
+      "description": "A trigger event occurs if the six-month average of the monthly percentage of HELOC-related mortgage loans that are 60 or more days delinquent, including foreclosure, REO or bankruptcy status but excluding charged-off loans and loans subject to a forbearance plan, divided by the aggregate certificate principal amount of all certificates other than Class A-1, exceeds 5%.",
       "threshold": 0.05,
       "operator": "greater_than",
       "numerator_components": [],
@@ -1215,7 +1219,7 @@
         "class_name": "A-1",
         "cusip": "46656UAA1",
         "type": "Senior",
-        "sub_type": "Floater/Pro Rata",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
         "is_exchangeable": false,
@@ -1239,7 +1243,7 @@
         "class_name": "M-1",
         "cusip": "46656UAB9",
         "type": "Mezzanine",
-        "sub_type": "Floater/Pro Rata",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
         "is_exchangeable": false,
@@ -1263,7 +1267,7 @@
         "class_name": "M-2",
         "cusip": "46656UAC7",
         "type": "Mezzanine",
-        "sub_type": "Floater/Pro Rata",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
         "is_exchangeable": false,
@@ -1287,7 +1291,7 @@
         "class_name": "M-3",
         "cusip": "46656UAD5",
         "type": "Mezzanine",
-        "sub_type": "Floater/Pro Rata",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
         "is_exchangeable": false,
@@ -1311,11 +1315,11 @@
         "class_name": "B-1",
         "cusip": "46656UAE3",
         "type": "Subordinate",
-        "sub_type": "Floater/Depositable",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
-        "is_exchangeable": true,
-        "exchange_group": "BX",
+        "is_exchangeable": false,
+        "exchange_group": null,
         "initial_principal": 6057000,
         "interest_rate_type": "floating",
         "fixed_rate": null,
@@ -1335,11 +1339,11 @@
         "class_name": "B-2",
         "cusip": "46656UAF0",
         "type": "Subordinate",
-        "sub_type": "Floater/Depositable",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
-        "is_exchangeable": true,
-        "exchange_group": "BX",
+        "is_exchangeable": false,
+        "exchange_group": null,
         "initial_principal": 3449000,
         "interest_rate_type": "floating",
         "fixed_rate": null,
@@ -1359,11 +1363,11 @@
         "class_name": "B-3",
         "cusip": "46656UAG8",
         "type": "Subordinate",
-        "sub_type": "Floater/Depositable",
+        "sub_type": "Floater",
         "is_notional": false,
         "is_residual": false,
-        "is_exchangeable": true,
-        "exchange_group": "BX",
+        "is_exchangeable": false,
+        "exchange_group": null,
         "initial_principal": 4473000,
         "interest_rate_type": "floating",
         "fixed_rate": null,
@@ -1383,14 +1387,14 @@
         "class_name": "B-4",
         "cusip": "46656UAH6",
         "type": "Subordinate",
-        "sub_type": "Principal Only/Depositable",
+        "sub_type": "Principal Only",
         "is_notional": false,
         "is_residual": false,
-        "is_exchangeable": true,
-        "exchange_group": "BX",
+        "is_exchangeable": false,
+        "exchange_group": null,
         "initial_principal": 7456076,
         "interest_rate_type": "principal_only",
-        "fixed_rate": 0,
+        "fixed_rate": null,
         "margin": 0,
         "benchmark": null,
         "rate_cap": null,
@@ -1407,7 +1411,7 @@
         "class_name": "BX",
         "cusip": "46656UAJ2",
         "type": "Exchangeable",
-        "sub_type": "Exchangeable",
+        "sub_type": null,
         "is_notional": false,
         "is_residual": false,
         "is_exchangeable": true,
@@ -1421,8 +1425,8 @@
         "accrual_convention": "30/360",
         "expected_final_date": "2053-06",
         "final_scheduled_date": "2053-11",
-        "interest_priority": null,
-        "principal_priority": null,
+        "interest_priority": 9,
+        "principal_priority": 9,
         "principal_method": null,
         "fitch_rating": null,
         "kbra_rating": null
@@ -1445,7 +1449,7 @@
         "accrual_convention": "30/360",
         "expected_final_date": "2053-05",
         "final_scheduled_date": "2053-11",
-        "interest_priority": null,
+        "interest_priority": 10,
         "principal_priority": null,
         "principal_method": null,
         "fitch_rating": null,
@@ -1455,11 +1459,11 @@
         "class_name": "X",
         "cusip": "46656UAL7",
         "type": "Subordinate",
-        "sub_type": "Monthly Excess Cashflow/Depositable",
+        "sub_type": "Monthly Excess Cashflow",
         "is_notional": true,
         "is_residual": false,
-        "is_exchangeable": true,
-        "exchange_group": "BX",
+        "is_exchangeable": false,
+        "exchange_group": null,
         "initial_principal": 186391076,
         "interest_rate_type": "excess_cashflow",
         "fixed_rate": null,
@@ -1469,7 +1473,7 @@
         "accrual_convention": "30/360",
         "expected_final_date": "2053-06",
         "final_scheduled_date": "2053-11",
-        "interest_priority": null,
+        "interest_priority": 11,
         "principal_priority": null,
         "principal_method": null,
         "fitch_rating": null,
@@ -1502,7 +1506,7 @@
     ],
     "fees": [
       {
-        "fee_name": "Servicing Fee - non-SLS Serviced Mortgage Loans",
+        "fee_name": "Servicing Fee - Non-SLS Serviced Mortgage Loans",
         "fee_type": "percentage",
         "fee_rate": 0.005,
         "fixed_amount": null,
@@ -1517,7 +1521,7 @@
         "fee_name": "Servicing Fee - SLS Serviced Mortgage Loans",
         "fee_type": "fixed",
         "fee_rate": null,
-        "fixed_amount": null,
+        "fixed_amount": 9,
         "priority": 2,
         "fee_cap": null,
         "applies_to": "pool_balance",
@@ -1574,7 +1578,7 @@
         "payee": "Owner Trustee"
       },
       {
-        "fee_name": "Participation Owner Trustee / Participation Registrar Fee",
+        "fee_name": "Participation Owner Trustee/Participation Registrar Fee",
         "fee_type": "fixed",
         "fee_rate": null,
         "fixed_amount": null,
@@ -1583,7 +1587,7 @@
         "applies_to": "issuing_entity",
         "servicer_name": null,
         "category": "fee",
-        "payee": "Participation Owner Trustee / Participation Registrar"
+        "payee": "Participation Owner Trustee/Participation Registrar"
       },
       {
         "fee_name": "Securities Administrator Fee",
@@ -1598,7 +1602,7 @@
         "payee": "Securities Administrator"
       },
       {
-        "fee_name": "Trust Expenses under Securities Administrator / Trustee Annual Expense Cap",
+        "fee_name": "Trust Expenses",
         "fee_type": "fixed",
         "fee_rate": null,
         "fixed_amount": null,
@@ -1607,14 +1611,26 @@
         "applies_to": "issuing_entity",
         "servicer_name": null,
         "category": "expense",
-        "payee": "Applicable trust expense payees"
+        "payee": "Trust Expense Payees"
+      },
+      {
+        "fee_name": "Securities Administrator/Trustee Annual Expense Cap",
+        "fee_type": "fixed",
+        "fee_rate": null,
+        "fixed_amount": null,
+        "priority": 10,
+        "fee_cap": null,
+        "applies_to": "issuing_entity",
+        "servicer_name": null,
+        "category": "expense",
+        "payee": "Trust Expense Payees"
       }
     ],
     "waterfall": {
       "interest_waterfall": [
         {
           "step": 1,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class A-1 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class A-1 Certificates",
           "class_name": "A-1",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1624,7 +1640,7 @@
         },
         {
           "step": 2,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-1 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-1 Certificates",
           "class_name": "M-1",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1634,7 +1650,7 @@
         },
         {
           "step": 3,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-2 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-2 Certificates",
           "class_name": "M-2",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1644,7 +1660,7 @@
         },
         {
           "step": 4,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-3 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class M-3 Certificates",
           "class_name": "M-3",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1654,7 +1670,7 @@
         },
         {
           "step": 5,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-1 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-1 Certificates",
           "class_name": "B-1",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1664,7 +1680,7 @@
         },
         {
           "step": 6,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-2 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-2 Certificates",
           "class_name": "B-2",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1674,7 +1690,7 @@
         },
         {
           "step": 7,
-          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-3 Certificates.",
+          "description": "Pay any Interest Distribution Amount and Interest Carryforward Amount to the Class B-3 Certificates",
           "class_name": "B-3",
           "payment_type": "interest",
           "source_bucket": "interest_remittance",
@@ -1684,7 +1700,7 @@
         },
         {
           "step": 8,
-          "description": "Any remaining Interest Remittance Amount becomes part of Monthly Excess Cashflow.",
+          "description": "Any remaining Interest Remittance Amount becomes part of Monthly Excess Cashflow",
           "class_name": null,
           "payment_type": "excess",
           "source_bucket": "interest_remittance",
@@ -1696,7 +1712,7 @@
       "principal_waterfall": [
         {
           "step": 1,
-          "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class A-1 Certificates until their Class Principal Amount is reduced to zero.",
+          "description": "Pay principal to the Class A-1 Certificates, pro rata with the Class M-1, Class M-2 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
           "class_name": "A-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1710,7 +1726,7 @@
         },
         {
           "step": 1,
-          "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-1 Certificates until their Class Principal Amount is reduced to zero.",
+          "description": "Pay principal to the Class M-1 Certificates, pro rata with the Class A-1, Class M-2 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
           "class_name": "M-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1724,7 +1740,7 @@
         },
         {
           "step": 1,
-          "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-2 Certificates until their Class Principal Amount is reduced to zero.",
+          "description": "Pay principal to the Class M-2 Certificates, pro rata with the Class A-1, Class M-1 and Class M-3 Certificates, until its Class Principal Amount is reduced to zero",
           "class_name": "M-2",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1738,7 +1754,7 @@
         },
         {
           "step": 1,
-          "description": "Pay principal concurrently, pro rata based on Class Principal Amount, to the Class M-3 Certificates until their Class Principal Amount is reduced to zero.",
+          "description": "Pay principal to the Class M-3 Certificates, pro rata with the Class A-1, Class M-1 and Class M-2 Certificates, until its Class Principal Amount is reduced to zero",
           "class_name": "M-3",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1752,7 +1768,7 @@
         },
         {
           "step": 2,
-          "description": "Pay principal to the Class B-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-1 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1762,7 +1778,7 @@
         },
         {
           "step": 3,
-          "description": "Pay principal to the Class B-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-2 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-2",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1772,7 +1788,7 @@
         },
         {
           "step": 4,
-          "description": "Pay principal to the Class B-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-3 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-3",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1782,7 +1798,7 @@
         },
         {
           "step": 5,
-          "description": "Pay principal to the Class B-4 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-4 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-4",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1792,7 +1808,7 @@
         },
         {
           "step": 6,
-          "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow.",
+          "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow",
           "class_name": null,
           "payment_type": "excess",
           "source_bucket": "principal_remittance",
@@ -1802,7 +1818,7 @@
         },
         {
           "step": 1,
-          "description": "Pay principal to the Class A-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class A-1 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "A-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1812,7 +1828,7 @@
         },
         {
           "step": 2,
-          "description": "Pay principal to the Class M-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class M-1 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "M-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1822,7 +1838,7 @@
         },
         {
           "step": 3,
-          "description": "Pay principal to the Class M-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class M-2 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "M-2",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1832,7 +1848,7 @@
         },
         {
           "step": 4,
-          "description": "Pay principal to the Class M-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class M-3 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "M-3",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1842,7 +1858,7 @@
         },
         {
           "step": 5,
-          "description": "Pay principal to the Class B-1 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-1 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-1",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1852,7 +1868,7 @@
         },
         {
           "step": 6,
-          "description": "Pay principal to the Class B-2 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-2 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-2",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1862,7 +1878,7 @@
         },
         {
           "step": 7,
-          "description": "Pay principal to the Class B-3 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-3 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-3",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1872,7 +1888,7 @@
         },
         {
           "step": 8,
-          "description": "Pay principal to the Class B-4 Certificates until the Class Principal Amount thereof is reduced to zero.",
+          "description": "Pay principal to the Class B-4 Certificates until its Class Principal Amount is reduced to zero",
           "class_name": "B-4",
           "payment_type": "principal",
           "source_bucket": "principal_remittance",
@@ -1882,7 +1898,7 @@
         },
         {
           "step": 9,
-          "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow.",
+          "description": "Any remaining Principal Remittance Amount becomes part of Monthly Excess Cashflow",
           "class_name": null,
           "payment_type": "excess",
           "source_bucket": "principal_remittance",
@@ -1894,7 +1910,7 @@
       "excess_cashflow_waterfall": [
         {
           "step": 1,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class A-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class A-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "A-1",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1903,8 +1919,8 @@
           "amount_formula": "min(balances.get(\"A-1\", 0), available_funds)"
         },
         {
-          "step": 2,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "M-1",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1913,8 +1929,8 @@
           "amount_formula": "min(balances.get(\"M-1\", 0), available_funds)"
         },
         {
-          "step": 3,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-2 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-2 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "M-2",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1923,8 +1939,8 @@
           "amount_formula": "min(balances.get(\"M-2\", 0), available_funds)"
         },
         {
-          "step": 4,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-3 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class M-3 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "M-3",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1933,8 +1949,8 @@
           "amount_formula": "min(balances.get(\"M-3\", 0), available_funds)"
         },
         {
-          "step": 5,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-1 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-1 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "B-1",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1943,8 +1959,8 @@
           "amount_formula": "min(balances.get(\"B-1\", 0), available_funds)"
         },
         {
-          "step": 6,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-2 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-2 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "B-2",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1953,8 +1969,8 @@
           "amount_formula": "min(balances.get(\"B-2\", 0), available_funds)"
         },
         {
-          "step": 7,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-3 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-3 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "B-3",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1963,8 +1979,8 @@
           "amount_formula": "min(balances.get(\"B-3\", 0), available_funds)"
         },
         {
-          "step": 8,
-          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-4 Certificates in reduction of the Class Principal Amount thereof until reduced to zero.",
+          "step": 1,
+          "description": "Up to the amount of any Realized Losses for the Distribution Date, pay sequentially to the Class B-4 Certificates in reduction of its Class Principal Amount until reduced to zero",
           "class_name": "B-4",
           "payment_type": "principal",
           "source_bucket": "excess_cashflow",
@@ -1973,8 +1989,8 @@
           "amount_formula": "min(balances.get(\"B-4\", 0), available_funds)"
         },
         {
-          "step": 9,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class A-1 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class A-1 Certificates",
           "class_name": "A-1",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -1983,8 +1999,8 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 10,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-1 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-1 Certificates",
           "class_name": "M-1",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -1993,8 +2009,8 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 11,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-2 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-2 Certificates",
           "class_name": "M-2",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -2003,8 +2019,8 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 12,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-3 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class M-3 Certificates",
           "class_name": "M-3",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -2013,8 +2029,8 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 13,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-1 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-1 Certificates",
           "class_name": "B-1",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -2023,8 +2039,8 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 14,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-2 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-2 Certificates",
           "class_name": "B-2",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
@@ -2033,19 +2049,9 @@
           "amount_formula": "available_funds"
         },
         {
-          "step": 15,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-3 Certificates.",
+          "step": 2,
+          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-3 Certificates",
           "class_name": "B-3",
-          "payment_type": "loss_reimbursement",
-          "source_bucket": "excess_cashflow",
-          "condition": "always",
-          "concurrent_with": null,
-          "amount_formula": "available_funds"
-        },
-        {
-          "step": 16,
-          "description": "Up to the amount of previously applied Certificate Writedown Amounts, pay sequentially to the Class B-4 Certificates.",
-          "class_name": "B-4",
           "payment_type": "loss_reimbursement",
           "source_bucket": "excess_cashflow",
           "condition": "always",
@@ -2069,42 +2075,42 @@
         {
           "test_name": "Credit Support Depletion Event",
           "test_type": "ce",
-          "description": "A trigger event is in effect on the first distribution date on which the aggregate class principal amount of the subordinate certificates has been reduced to zero, prior to any distributions or allocations on that distribution date.",
+          "description": "A trigger event occurs if the aggregate class principal amount of the subordinate certificates has been reduced to zero prior to distributions or allocations on the distribution date.",
           "threshold": 0,
-          "operator": "equals",
-          "trigger_on_failure": "Principal distributions switch to sequential priority: A-1, M-1, M-2, M-3, B-1, B-2, B-3, then B-4."
+          "operator": "less_than_or_equal",
+          "trigger_on_failure": "Principal remittance amount is distributed sequentially to A-1, M-1, M-2, M-3, B-1, B-2, B-3 and B-4, rather than pro rata to A-1, M-1, M-2 and M-3."
         },
         {
           "test_name": "Cumulative Loss Trigger Event",
-          "test_type": "ce",
-          "description": "A trigger event occurs if aggregate realized losses attributable to the 23-HE1 PC since the cut-off date through the end of the related monthly period, divided by the aggregate certificate principal amount of all certificates other than Class A-1 as of the last day of the related monthly period, exceeds 5%.",
+          "test_type": "other",
+          "description": "A trigger event occurs if aggregate realized losses attributable to the 23-HE1 PC since the cut-off date through the end of the related monthly period, divided by the aggregate certificate principal amount of all certificates other than Class A-1, exceeds 5%.",
           "threshold": 0.05,
           "operator": "greater_than",
-          "trigger_on_failure": "Principal distributions switch to sequential priority: A-1, M-1, M-2, M-3, B-1, B-2, B-3, then B-4."
+          "trigger_on_failure": "Principal remittance amount is distributed sequentially to A-1, M-1, M-2, M-3, B-1, B-2, B-3 and B-4, rather than pro rata to A-1, M-1, M-2 and M-3."
         },
         {
           "test_name": "Delinquency Trigger Event",
           "test_type": "delinquency",
-          "description": "A trigger event occurs if the six-month average of the monthly percentage of HELOC-related mortgage loans that are 60 days or more delinquent under the MBA delinquency methodology, including loans in foreclosure, REO or bankruptcy status but excluding charged-off loans and loans subject to a forbearance plan, divided by the aggregate certificate principal amount of all certificates other than Class A-1 as of the last day of the related monthly period, exceeds 5%.",
+          "description": "A trigger event occurs if the six-month average of the monthly percentage of HELOC-related mortgage loans that are 60 or more days delinquent, including foreclosure, REO or bankruptcy status but excluding charged-off loans and loans subject to a forbearance plan, divided by the aggregate certificate principal amount of all certificates other than Class A-1, exceeds 5%.",
           "threshold": 0.05,
           "operator": "greater_than",
-          "trigger_on_failure": "Principal distributions switch to sequential priority: A-1, M-1, M-2, M-3, B-1, B-2, B-3, then B-4."
+          "trigger_on_failure": "Principal remittance amount is distributed sequentially to A-1, M-1, M-2, M-3, B-1, B-2, B-3 and B-4, rather than pro rata to A-1, M-1, M-2 and M-3."
         }
       ],
       "reserve_accounts": [
         {
           "account_name": "Cap Carryover Reserve Account",
           "initial_balance": null,
-          "target_amount": "Up to the aggregate cap carryover amounts for the Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 Certificates for the related distribution date.",
-          "funded_from": "Monthly excess cashflow otherwise distributable to the Class X Certificates.",
-          "released_to": "Sequentially to the Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 Certificates, in that order, to pay unpaid cap carryover amounts."
+          "target_amount": "Aggregate cap carryover amounts for Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 for the applicable distribution date",
+          "funded_from": "Monthly excess cashflow otherwise distributable to the Class X Certificates",
+          "released_to": "Sequentially to Class A-1, Class M-1, Class M-2, Class M-3, Class B-1, Class B-2 and Class B-3 for unpaid cap carryover amounts"
         },
         {
           "account_name": "Excess Reserve Account",
           "initial_balance": null,
           "target_amount": null,
-          "funded_from": "Any remaining monthly excess cashflow after prior monthly excess cashflow priorities, as provided in the securitization sale agreement.",
-          "released_to": "As provided in the securitization sale agreement."
+          "funded_from": "Any remaining monthly excess cashflow after payments for realized losses, certificate writedown reimbursements, cap carryover amounts, Class X distribution amount and unpaid trust expenses",
+          "released_to": "As provided in the securitization sale agreement"
         }
       ]
     },
@@ -2172,7 +2178,7 @@
   },
   "manually_verified": true,
   "verified_by": "Admin",
-  "verified_at": "2026-05-28T09:40:46.391019",
-  "created_at": "2026-05-28T09:26:30.381828",
-  "updated_at": "2026-05-28T10:12:03.603880"
+  "verified_at": "2026-05-29T06:50:25.903506",
+  "created_at": "2026-05-29T06:28:03.112479",
+  "updated_at": "2026-06-01T05:13:25.661685"
 }

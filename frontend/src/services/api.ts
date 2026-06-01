@@ -1,7 +1,9 @@
 import axios from "axios";
 import type { DealConfig } from "../types";
 
-const BASE = "http://localhost:8010";
+const RAW_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
+const BASE = RAW_BASE ? RAW_BASE.replace(/\/+$/, "") : "";
+const withBase = (path: string) => `${BASE}${path}`;
 
 const api = axios.create({ baseURL: BASE });
 
@@ -35,7 +37,7 @@ export const addAuditEntry = (dealId: string, payload: { row_key: string; sender
   api.post(`/api/deals/${dealId}/audit/entry`, payload).then((r) => r.data);
 
 // Source PDF used during extraction. Returned by the backend as application/pdf.
-export const dealPdfUrl = (dealId: string) => `${BASE}/api/deals/${dealId}/pdf`;
+export const dealPdfUrl = (dealId: string) => withBase(`/api/deals/${dealId}/pdf`);
 
 export const getSectionPages = (dealId: string) =>
   api.get(`/api/deals/${dealId}/section-pages`).then((r) => r.data as {
@@ -108,7 +110,7 @@ export const getReport = (dealId: string, paymentDate: string) =>
   api.get(`/api/reports/${dealId}/${paymentDate}`).then((r) => r.data);
 
 export const downloadReport = (dealId: string, paymentDate: string) =>
-  `${BASE}/api/reports/${dealId}/${paymentDate}/download`;
+  withBase(`/api/reports/${dealId}/${paymentDate}/download`);
 
 export const listReports = () =>
   api.get("/api/reports").then((r) => r.data);

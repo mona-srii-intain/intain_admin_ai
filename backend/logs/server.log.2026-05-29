@@ -1,0 +1,180 @@
+2026-05-29 06:22:12,776 [INFO] uvicorn.error: Started server process [1888070]
+2026-05-29 06:22:12,778 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-29 06:22:12,778 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-29 06:22:12,782 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-29 06:22:12,782 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-29 06:22:12,850 [CRITICAL] root: Failed to create Snowflake connection: HTTP 502 calling https://vault3.intainabs.com/v1/auth/approle/login: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+2026-05-29 06:22:12,850 [WARNING] uvicorn.error: Snowflake connection failed at startup: HTTP 502 calling https://vault3.intainabs.com/v1/auth/approle/login: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+. Will retry on first request.
+2026-05-29 06:22:12,850 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-29 06:22:12,850 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-29 06:22:12,850 [INFO] uvicorn.error: Application startup complete.
+2026-05-29 06:23:08,812 [INFO] uvicorn.error: [5%] Extracting PDF text and tables via Gemini
+2026-05-29 06:25:19,629 [INFO] uvicorn.error: DocAI Layout Parser: tables found on 0/91 pseudo pages
+2026-05-29 06:26:14,884 [INFO] uvicorn.error: PDF extraction complete in 186.1s
+2026-05-29 06:26:14,885 [INFO] uvicorn.error: Total pages extracted: 371
+2026-05-29 06:26:14,885 [INFO] uvicorn.error: [12%] Scanning all pages for key values
+2026-05-29 06:26:15,653 [INFO] uvicorn.error: Regex found servicers: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-29 06:26:15,653 [INFO] uvicorn.error: Regex pre-scan found fields: ['cut_off_date', 'first_payment_date', 'legal_maturity_date', 'original_pool_balance', 'benchmark', 'interest_day_count', 'lien_position', 'asset_type']
+2026-05-29 06:26:15,654 [INFO] uvicorn.error: [18%] Identifying best pages per section
+2026-05-29 06:26:15,714 [INFO] uvicorn.error:   certificate_table: top pages = [17, 25, 142, 221, 292]
+2026-05-29 06:26:15,714 [INFO] uvicorn.error:   priority_of_payments: top pages = [30, 152, 153, 31, 154]
+2026-05-29 06:26:15,714 [INFO] uvicorn.error:   fees_expenses: top pages = [223, 39, 40, 67, 149]
+2026-05-29 06:26:15,714 [INFO] uvicorn.error:   deal_summary: top pages = [20, 38, 136, 22, 23]
+2026-05-29 06:26:15,714 [INFO] uvicorn.error:   loss_allocation: top pages = [32, 69, 33, 70, 2]
+2026-05-29 06:26:15,715 [INFO] uvicorn.error: [25%] Extracting deal info + cert classes + direct table (parallel)
+2026-05-29 06:26:25,080 [INFO] uvicorn.error: pdfplumber table extraction insufficient — trying text-based fallback
+2026-05-29 06:26:25,083 [INFO] uvicorn.error: Certificate table direct extraction found 12 classes: ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-29 06:26:28,918 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:27:11,306 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:27:11,308 [INFO] uvicorn.error: [Group A] wall-clock 55.6s
+2026-05-29 06:27:11,308 [INFO] uvicorn.error: Direct table extraction: 12 classes found — ['A-1', 'M-1', 'M-2', 'M-3', 'B-1', 'B-2', 'B-3', 'B-4', 'BX', 'A-IO-S', 'X', 'A-R']
+2026-05-29 06:27:11,308 [INFO] uvicorn.error:   Regex fallback: cut_off_date = 2023-05-31
+2026-05-29 06:27:11,308 [INFO] uvicorn.error:   Regex fallback: first_payment_date = 2023-07-20
+2026-05-29 06:27:11,309 [INFO] uvicorn.error:   Regex fallback: legal_maturity_date = 2053-11-20
+2026-05-29 06:27:11,309 [INFO] uvicorn.error:   Regex fallback: benchmark = SOFR
+2026-05-29 06:27:11,309 [INFO] uvicorn.error:   Regex fallback: interest_day_count = actual/360
+2026-05-29 06:27:11,309 [INFO] uvicorn.error:   Regex servicers applied: ['Specialized Loan Servicing LLC', 'loanDepot']
+2026-05-29 06:27:11,309 [INFO] uvicorn.error: Extracted deal info: deal_name=J.P. Morgan Mortgage Trust 2023-HE1, cut_off_date=2023-05-31, servicers=2
+2026-05-29 06:27:11,309 [INFO] uvicorn.error: LLM extracted 12 certificate classes (before override)
+2026-05-29 06:27:11,423 [INFO] uvicorn.error: [48%] Extracting fees + waterfall + triggers (parallel)
+2026-05-29 06:27:36,531 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:27:50,969 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:28:03,107 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:28:03,110 [INFO] uvicorn.error: [Group B] wall-clock 51.7s
+2026-05-29 06:28:03,110 [INFO] uvicorn.error: Extracted 10 fee entries
+2026-05-29 06:28:03,111 [INFO] uvicorn.error: Extracted waterfall (after class filter): 8 interest, 18 principal, 15 excess steps
+2026-05-29 06:28:03,111 [INFO] uvicorn.error: [80%] Validation pass — re-querying missing fields
+2026-05-29 06:28:03,111 [INFO] uvicorn.error: [88%] Generating waterfall computation formulas
+2026-05-29 06:28:03,111 [INFO] uvicorn.error: Generated 41 step formulas
+2026-05-29 06:28:03,111 [INFO] uvicorn.error: [92%] Assembling deal configuration
+2026-05-29 06:28:03,112 [INFO] uvicorn.error: [100%] Extraction complete
+2026-05-29 06:28:03,112 [INFO] uvicorn.error: Extraction complete: 12 classes, 10 fees, 8 interest steps, 18 principal steps, confidence=0.85
+2026-05-29 06:28:03,133 [INFO] uvicorn.access: 127.0.0.1:59330 - "POST /api/deals/extract HTTP/1.1" 200
+2026-05-29 06:28:04,128 [INFO] uvicorn.access: 127.0.0.1:59330 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 06:28:04,387 [INFO] uvicorn.access: 127.0.0.1:59330 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 06:46:43,083 [INFO] uvicorn.access: 127.0.0.1:58412 - "OPTIONS /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-29 06:46:51,983 [INFO] httpx: HTTP Request: POST https://ai-ida-poc-eastus2.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-02-15-preview "HTTP/1.1 200 OK"
+2026-05-29 06:46:51,986 [INFO] uvicorn.access: 127.0.0.1:58416 - "POST /api/deals/triggers/generate-expression HTTP/1.1" 200
+2026-05-29 06:46:54,877 [INFO] uvicorn.access: 127.0.0.1:58416 - "OPTIONS /api/deals/review HTTP/1.1" 200
+2026-05-29 06:46:57,032 [INFO] uvicorn.access: 127.0.0.1:40942 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-29 06:50:25,907 [INFO] uvicorn.access: 127.0.0.1:55900 - "POST /api/deals/review HTTP/1.1" 200
+2026-05-29 06:52:28,287 [CRITICAL] root: Failed to create Snowflake connection: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:52:28,287 [CRITICAL] root: Failed to reconnect to Snowflake: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:52:28,288 [ERROR] root: Unexpected Error: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat | Query: SELECT DISTINCT DEAL_ID FROM IA_DEMO.PUBLIC.deal_info ORDER BY DEAL_ID
+Traceback (most recent call last):
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 362, in executeQuery
+    await check_and_reconnect_db()
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 350, in check_and_reconnect_db
+    await create_pool(_active_pool_conn_key)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 304, in create_pool
+    conn_key, conn = _resolve_snowflake_conn_config(cfg, requested_platform)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 287, in _resolve_snowflake_conn_config
+    raise RuntimeError(
+RuntimeError: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+
+2026-05-29 06:52:28,288 [INFO] uvicorn.access: 127.0.0.1:53116 - "GET /api/loantape/deals HTTP/1.1" 500
+2026-05-29 06:52:28,545 [CRITICAL] root: Failed to create Snowflake connection: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:52:28,546 [CRITICAL] root: Failed to reconnect to Snowflake: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:52:28,546 [ERROR] root: Unexpected Error: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat | Query: SELECT DISTINCT DEAL_ID FROM IA_DEMO.PUBLIC.deal_info ORDER BY DEAL_ID
+Traceback (most recent call last):
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 362, in executeQuery
+    await check_and_reconnect_db()
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 350, in check_and_reconnect_db
+    await create_pool(_active_pool_conn_key)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 304, in create_pool
+    conn_key, conn = _resolve_snowflake_conn_config(cfg, requested_platform)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 287, in _resolve_snowflake_conn_config
+    raise RuntimeError(
+RuntimeError: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+
+2026-05-29 06:52:28,546 [INFO] uvicorn.access: 127.0.0.1:53116 - "GET /api/loantape/deals HTTP/1.1" 500
+2026-05-29 06:53:08,552 [INFO] uvicorn.access: 127.0.0.1:52482 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 06:53:08,810 [INFO] uvicorn.access: 127.0.0.1:52482 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 06:53:09,069 [INFO] uvicorn.access: 127.0.0.1:52482 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 06:53:09,079 [INFO] uvicorn.access: 127.0.0.1:52494 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-29 06:53:09,807 [INFO] uvicorn.access: 127.0.0.1:52494 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 06:53:10,058 [INFO] uvicorn.access: 127.0.0.1:52494 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 06:56:07,464 [CRITICAL] root: Failed to create Snowflake connection: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:56:07,464 [CRITICAL] root: Failed to reconnect to Snowflake: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:56:07,465 [ERROR] root: Unexpected Error: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat | Query: SELECT DISTINCT DEAL_ID FROM IA_DEMO.PUBLIC.deal_info ORDER BY DEAL_ID
+Traceback (most recent call last):
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 362, in executeQuery
+    await check_and_reconnect_db()
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 350, in check_and_reconnect_db
+    await create_pool(_active_pool_conn_key)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 304, in create_pool
+    conn_key, conn = _resolve_snowflake_conn_config(cfg, requested_platform)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 287, in _resolve_snowflake_conn_config
+    raise RuntimeError(
+RuntimeError: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+
+2026-05-29 06:56:07,465 [INFO] uvicorn.access: 127.0.0.1:51552 - "GET /api/loantape/deals HTTP/1.1" 500
+2026-05-29 06:56:07,720 [CRITICAL] root: Failed to create Snowflake connection: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:56:07,720 [CRITICAL] root: Failed to reconnect to Snowflake: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+2026-05-29 06:56:07,720 [ERROR] root: Unexpected Error: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat | Query: SELECT DISTINCT DEAL_ID FROM IA_DEMO.PUBLIC.deal_info ORDER BY DEAL_ID
+Traceback (most recent call last):
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 362, in executeQuery
+    await check_and_reconnect_db()
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 350, in check_and_reconnect_db
+    await create_pool(_active_pool_conn_key)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 304, in create_pool
+    conn_key, conn = _resolve_snowflake_conn_config(cfg, requested_platform)
+  File "/aianalytics/intain_admin_ai/backend/config/database.py", line 287, in _resolve_snowflake_conn_config
+    raise RuntimeError(
+RuntimeError: No Snowflake connection found for platform 'None'. Available connection keys: ia_demo, ia_uat
+
+2026-05-29 06:56:07,721 [INFO] uvicorn.access: 127.0.0.1:51552 - "GET /api/loantape/deals HTTP/1.1" 500
+2026-05-29 06:56:08,340 [INFO] uvicorn.access: 127.0.0.1:51552 - "GET /api/reports HTTP/1.1" 200
+2026-05-29 06:56:08,614 [INFO] uvicorn.access: 127.0.0.1:51552 - "GET /api/reports HTTP/1.1" 200
+2026-05-29 06:56:11,018 [INFO] uvicorn.access: 127.0.0.1:45308 - "GET /api/reports/TESTH101/2023-07-20/download HTTP/1.1" 200
+2026-05-29 09:58:52,654 [INFO] uvicorn.error: Shutting down
+2026-05-29 09:58:52,755 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-29 09:58:52,755 [INFO] uvicorn.error: Shutting down...
+2026-05-29 09:58:52,756 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-29 09:58:52,756 [INFO] uvicorn.error: Finished server process [1888070]
+2026-05-29 12:41:37,758 [INFO] uvicorn.error: Started server process [2262718]
+2026-05-29 12:41:37,758 [INFO] uvicorn.error: Waiting for application startup.
+2026-05-29 12:41:37,759 [INFO] uvicorn.error: Starting Intain Admin AI backend...
+2026-05-29 12:41:37,763 [INFO] uvicorn.error: Vault: preparing to fetch Snowflake private key
+2026-05-29 12:41:37,763 [INFO] uvicorn.error: Vault: logging in via AppRole
+2026-05-29 12:41:37,916 [INFO] uvicorn.error: Vault: AppRole login successful
+2026-05-29 12:41:37,916 [INFO] uvicorn.error: Vault: reading secret from configured path
+2026-05-29 12:41:38,069 [INFO] uvicorn.error: Vault: private key fetched and converted for Snowflake JWT
+2026-05-29 12:41:38,069 [INFO] uvicorn.error: Snowflake: attempting connection (with role if configured)
+2026-05-29 12:41:38,070 [INFO] snowflake.connector.connection: Snowflake Connector for Python Version: 4.4.0, Python Version: 3.10.12, Platform: Linux-6.8.0-1029-azure-x86_64-with-glibc2.35
+2026-05-29 12:41:38,071 [INFO] snowflake.connector.connection: Connecting to GLOBAL Snowflake domain
+2026-05-29 12:41:39,542 [INFO] uvicorn.error: Snowflake: connected successfully
+2026-05-29 12:41:39,542 [INFO] uvicorn.error: Snowflake connection established
+2026-05-29 12:41:39,542 [INFO] uvicorn.error: Data directories ready: /aianalytics/intain_admin_ai/backend/data/deals, /aianalytics/intain_admin_ai/backend/data/reports
+2026-05-29 12:41:39,542 [INFO] uvicorn.error: Backend ready. Docs: http://localhost:8010/docs
+2026-05-29 12:41:39,543 [INFO] uvicorn.error: Application startup complete.
+2026-05-29 12:42:04,541 [INFO] uvicorn.access: 127.0.0.1:56030 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 12:42:04,786 [INFO] uvicorn.access: 127.0.0.1:56034 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 12:42:04,881 [INFO] uvicorn.access: 127.0.0.1:56036 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-29 12:42:05,025 [INFO] uvicorn.access: 127.0.0.1:56042 - "GET /api/deals HTTP/1.1" 200
+2026-05-29 12:42:05,265 [INFO] uvicorn.access: 127.0.0.1:56056 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 12:42:05,505 [INFO] uvicorn.access: 127.0.0.1:56064 - "GET /api/deals/TESTH101/audit HTTP/1.1" 200
+2026-05-29 12:42:08,647 [INFO] uvicorn.access: 127.0.0.1:56782 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-29 12:42:09,909 [INFO] uvicorn.access: 127.0.0.1:56784 - "GET /api/loantape/deals HTTP/1.1" 200
+2026-05-29 12:42:17,395 [INFO] uvicorn.access: 127.0.0.1:56798 - "GET /api/deals/TESTH101 HTTP/1.1" 200
+2026-05-29 12:42:17,477 [INFO] uvicorn.access: 127.0.0.1:56810 - "GET /api/loantape/TESTH101/payment-dates HTTP/1.1" 200
+2026-05-29 12:42:23,591 [INFO] uvicorn.access: 127.0.0.1:33022 - "GET /api/loantape/TESTH101/summary?payment_date=2023-07-20 HTTP/1.1" 200
+2026-05-29 12:42:29,198 [INFO] uvicorn.error: Shutting down
+2026-05-29 12:42:29,299 [INFO] uvicorn.error: Waiting for application shutdown.
+2026-05-29 12:42:29,299 [INFO] uvicorn.error: Shutting down...
+2026-05-29 12:42:29,299 [INFO] uvicorn.error: Application shutdown complete.
+2026-05-29 12:42:29,300 [INFO] uvicorn.error: Finished server process [2262718]
